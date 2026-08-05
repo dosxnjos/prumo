@@ -5,6 +5,18 @@ import { useSerieProjetada } from './useSerieProjetada'
 
 const OPCOES_HORIZONTE = [12, 24, 60] as const
 
+function formatarEixoY(centavos: number): string {
+  const reais = Math.round(centavos / 100)
+  return reais.toLocaleString('pt-BR', { maximumFractionDigits: 0 })
+}
+
+/** Mostra rótulo de mês só a cada N pontos, pra não empilhar texto. */
+function passoRotuloX(totalMeses: number): number {
+  if (totalMeses <= 12) return 1
+  if (totalMeses <= 24) return 2
+  return 6
+}
+
 interface Props {
   onFechar: () => void
 }
@@ -22,15 +34,23 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
 
   const LARGURA = 900
   const ALTURA = 260
-  const passoX = LARGURA / (serie.length - 1 || 1)
-  const pontos = serie
-    .map((p, i) => {
-      const x = i * passoX
-      const y = ALTURA - ((p.patrimonio - min) / amplitude) * ALTURA
-      return `${x},${y}`
-    })
-    .join(' ')
-  const yZero = ALTURA - ((0 - min) / amplitude) * ALTURA
+  const PAD_ESQ = 76
+  const PAD_DIR = 12
+  const PAD_TOPO = 12
+  const PAD_BAIXO = 28
+  const LARGURA_PLOT = LARGURA - PAD_ESQ - PAD_DIR
+  const ALTURA_PLOT = ALTURA - PAD_TOPO - PAD_BAIXO
+
+  const passoX = LARGURA_PLOT / (serie.length - 1 || 1)
+  const x = (i: number) => PAD_ESQ + i * passoX
+  const y = (valor: number) => PAD_TOPO + ALTURA_PLOT - ((valor - min) / amplitude) * ALTURA_PLOT
+
+  const pontos = serie.map((p, i) => `${x(i)},${y(p.patrimonio)}`).join(' ')
+
+  const TICKS_Y = 4
+  const ticksY = Array.from({ length: TICKS_Y + 1 }, (_, i) => min + (amplitude * i) / TICKS_Y)
+
+  const passoRotulo = passoRotuloX(serie.length)
 
   return (
     <div className="overlay" role="dialog" aria-modal="true">
@@ -59,17 +79,34 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
           role="img"
           aria-label="curva de saldo projetado, mês a mês"
         >
-          <line x1={0} y1={yZero} x2={LARGURA} y2={yZero} className="linha-zero" />
+          {ticksY.map((valor) => (
+            <g key={valor}>
+              <line x1={PAD_ESQ} y1={y(valor)} x2={LARGURA - PAD_DIR} y2={y(valor)} className="linha-grade" />
+              <text x={PAD_ESQ - 8} y={y(valor)} className="rotulo-eixo-y" textAnchor="end" dominantBaseline="middle">
+                R$ {formatarEixoY(valor)}
+              </text>
+            </g>
+          ))}
+
           <polyline points={pontos} className="linha-curva" fill="none" />
+
           {serie.map((p, i) => (
             <circle
               key={p.mes}
-              cx={i * passoX}
-              cy={ALTURA - ((p.patrimonio - min) / amplitude) * ALTURA}
+              cx={x(i)}
+              cy={y(p.patrimonio)}
               r={i === 0 ? 4 : 2.5}
               className={i === 0 ? 'ponto-hoje' : 'ponto-mes'}
             />
           ))}
+
+          {serie.map((p, i) =>
+            i % passoRotulo === 0 || i === serie.length - 1 ? (
+              <text key={p.mes} x={x(i)} y={ALTURA - 6} className="rotulo-eixo-x" textAnchor="middle">
+                {rotulo(p.mes)}
+              </text>
+            ) : null,
+          )}
         </svg>
 
         <p className="legenda-curva">

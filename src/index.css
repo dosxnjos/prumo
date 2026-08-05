@@ -369,15 +369,22 @@ li.ajustado {
   fill: var(--dono);
 }
 
+.linha-grade {
+  stroke: var(--linha);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+.rotulo-eixo-y,
+.rotulo-eixo-x {
+  fill: var(--text);
+  font-size: 11px;
+  opacity: 0.75;
+}
+
 .legenda-curva {
   font-size: 0.85em;
   opacity: 0.8;
-}
-
-.extremos-curva {
-  display: flex;
-  justify-content: space-between;
-  font-size: 0.85em;
 }
 
 .ver-detalhes {
