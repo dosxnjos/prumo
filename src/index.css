@@ -86,11 +86,50 @@ select {
   position: sticky;
   top: 0;
   background: var(--bg);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .nome-espaco {
   font-size: 1.1em;
   font-weight: 500;
+}
+
+.botao-config {
+  border: none;
+  font-size: 1.2em;
+  padding: 0.2em 0.4em;
+}
+
+.progresso-pe-de-meia {
+  margin: 12px 0;
+  padding: 10px 12px;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  font-size: 0.9em;
+}
+
+.config-financeira {
+  background: var(--bg);
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.config-financeira label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.preview-derivado {
+  font-size: 0.85em;
+  opacity: 0.8;
+  margin: 4px 0 16px;
 }
 
 .cabecalho-mes {

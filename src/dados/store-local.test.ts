@@ -2,6 +2,7 @@ import 'fake-indexeddb/auto'
 import { set } from 'idb-keyval'
 import { describe, expect, it } from 'vitest'
 import { definirEspacoAtivoId, obterEspacoAtivoId, storeLocal } from './store-local'
+import { configFinanceiraPadrao } from '../dominio/config'
 
 // createStore('prumo-db', 'prumo-store') abre um IndexedDB por processo; como
 // fake-indexeddb reinicia a cada teste (import fresco não limpa o banco), a
@@ -41,7 +42,7 @@ describe('salvar + carregar — "recarregar a página" preserva os dados', () =>
       criadoEm: '2026-01-01T00:00:00.000Z',
       atualizadoEm: '2026-01-01T00:00:00.000Z',
     }
-    await storeLocal.salvar(espaco.id, { regras: [regra], config: { taxaRendimentoMensal: 0, taxaJurosDividaMensal: 0, metaPeDeMeiaCentavos: 0 } })
+    await storeLocal.salvar(espaco.id, { regras: [regra], config: configFinanceiraPadrao() })
 
     // "reload": nova leitura do zero, sem estado em memória do teste anterior
     const dadosRecarregados = await storeLocal.carregar(espaco.id)
@@ -110,7 +111,10 @@ describe('exportarJSON + importarJSON', () => {
       criadoEm: '2026-01-01T00:00:00.000Z',
       atualizadoEm: '2026-01-01T00:00:00.000Z',
     }
-    await storeLocal.salvar(original.id, { regras: [regra], config: { taxaRendimentoMensal: 0.005, taxaJurosDividaMensal: 0.1, metaPeDeMeiaCentavos: 100000 } })
+    await storeLocal.salvar(original.id, {
+      regras: [regra],
+      config: { ...configFinanceiraPadrao(), taxaJurosDividaMensal: 0.1, metaPeDeMeiaMeses: 6, custoSobrevivenciaCentavos: 50000 },
+    })
 
     const json = await storeLocal.exportarJSON(original.id)
     const importado = await storeLocal.importarJSON(json)

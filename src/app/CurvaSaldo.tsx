@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useEspaco } from './ContextoEspaco'
+import { paraConfigProjecao } from '../dominio/config'
 import { formatarBRL } from '../dominio/dinheiro'
 import { mesAtual, rotulo, somarMeses } from '../dominio/mes'
 import { criarProjetorSerie } from '../dominio/projecao'
@@ -14,8 +15,13 @@ export function CurvaSaldo() {
     if (!dados) return []
     const inicio = mesAtual()
     const fim = somarMeses(inicio, horizonte - 1)
-    const projetarSerie = criarProjetorSerie(dados.regras, dados.config)
-    return projetarSerie(inicio, { reserva: 0, peDeMeia: 0, divida: 0 }, fim).map((r, i) => ({
+    const estadoInicial = {
+      reserva: dados.config.reservaAtualCentavos,
+      peDeMeia: dados.config.peDeMeiaAtualCentavos,
+      divida: 0,
+    }
+    const projetarSerie = criarProjetorSerie(dados.regras, paraConfigProjecao(dados.config))
+    return projetarSerie(inicio, estadoInicial, fim).map((r, i) => ({
       mes: somarMeses(inicio, i),
       patrimonio: r.reservaFinal + r.peDeMeiaFinal - r.dividaFinal,
     }))

@@ -1,10 +1,10 @@
-import type { ConfigProjecao } from '../dominio/projecao'
+import type { ConfigFinanceira } from '../dominio/config'
 import type { Espaco, Regra } from '../dominio/tipos'
 
 /** Tudo o que um espaço guarda, além do próprio `Espaco` (nome/membros). */
 export interface DadosEspaco {
   regras: Regra[]
-  config: ConfigProjecao
+  config: ConfigFinanceira
 }
 
 export interface ArquivoExportado {

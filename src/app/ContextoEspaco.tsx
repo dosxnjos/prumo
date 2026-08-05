@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import type { ReactNode } from 'react'
 import { definirEspacoAtivoId, obterEspacoAtivoId, storeLocal } from '../dados/store-local'
 import type { DadosEspaco } from '../dados/store'
+import type { ConfigFinanceira } from '../dominio/config'
 import type { Espaco, Regra } from '../dominio/tipos'
 
 interface EstadoEspaco {
@@ -19,6 +20,7 @@ interface EstadoEspaco {
    * teria uma referência stale e a gravação silenciosamente não aconteceria.
    */
   salvarRegras: (espacoId: string, regras: Regra[]) => Promise<void>
+  salvarConfig: (espacoId: string, config: ConfigFinanceira) => Promise<void>
   recarregar: () => Promise<void>
 }
 
@@ -89,16 +91,28 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     await recarregar()
   }, [recarregar])
 
-  const salvarRegras = useCallback(async (espacoId: string, regras: Regra[]) => {
+  /**
+   * Fonte da verdade é sempre o storage, nunca `espacoAtivo`/`dados` do
+   * React state (podem estar stale dentro da mesma execução assíncrona —
+   * a mesma classe de bug que já mordeu `criarEspaco`/`selecionarEspaco`).
+   */
+  const salvarDados = useCallback(async (espacoId: string, parcial: Partial<DadosEspaco>) => {
     const dadosAtuais = await storeLocal.carregar(espacoId)
-    const novosDados = { ...dadosAtuais, regras }
+    const novosDados = { ...dadosAtuais, ...parcial }
     await storeLocal.salvar(espacoId, novosDados)
-    // Fonte da verdade é o storage, nunca `espacoAtivo` do React state (que
-    // pode estar stale dentro da mesma execução assíncrona — é essa mesma
-    // classe de bug que já mordeu `criarEspaco`/`selecionarEspaco`).
     const ativoId = await obterEspacoAtivoId()
     if (ativoId === espacoId) setDados(novosDados)
   }, [])
+
+  const salvarRegras = useCallback(
+    (espacoId: string, regras: Regra[]) => salvarDados(espacoId, { regras }),
+    [salvarDados],
+  )
+
+  const salvarConfig = useCallback(
+    (espacoId: string, config: ConfigFinanceira) => salvarDados(espacoId, { config }),
+    [salvarDados],
+  )
 
   const valor = useMemo<EstadoEspaco>(() => ({
     carregando,
@@ -110,8 +124,9 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     atualizarEspacoAtivo,
     apagarEspaco,
     salvarRegras,
+    salvarConfig,
     recarregar,
-  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, recarregar])
+  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, recarregar])
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>
 }

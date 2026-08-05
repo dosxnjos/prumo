@@ -1,4 +1,5 @@
 import { createStore, del, get, set } from 'idb-keyval'
+import { configFinanceiraPadrao } from '../dominio/config'
 import type { Espaco } from '../dominio/tipos'
 import type { DadosEspaco, Store } from './store'
 
@@ -67,7 +68,7 @@ export const storeLocal: Store = {
     }
     const indice = await lerIndice()
     await salvarIndice([...indice, espaco])
-    await this.salvar(espaco.id, { regras: [], config: configPadrao() })
+    await this.salvar(espaco.id, { regras: [], config: configFinanceiraPadrao() })
     return espaco
   },
 
@@ -105,14 +106,6 @@ export const storeLocal: Store = {
     await this.salvar(espacoNovo.id, arquivo.dados)
     return espacoNovo
   },
-}
-
-function configPadrao() {
-  return {
-    taxaRendimentoMensal: 0,
-    taxaJurosDividaMensal: 0,
-    metaPeDeMeiaCentavos: 0,
-  }
 }
 
 export async function obterEspacoAtivoId(): Promise<string | undefined> {

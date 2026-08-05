@@ -238,6 +238,11 @@ a servir para alguma coisa. **Nada antes da Fase 8 toca em servidor.**
 
 ### 🎯 Marco A — "chega de planilha" (100% local, sem integração nenhuma)
 
+✅ **Todos os passos de código concluídos em 05/08/2026** (Fases 0–3 + passos
+30/31, 73 testes vitest + validação ao vivo com Playwright em cada fase). O que
+falta para o marco em si é o critério comportamental abaixo — depende do
+Gabriel recadastrar os itens reais e usar o app por um mês, não de código.
+
 O objetivo é ter **paridade com o que a planilha já faz**, e nada além. É a
 entrega que muda o hábito: enquanto o Gabriel ainda abrir o Sheets, feature nova
 não tem quem use.
@@ -555,15 +560,25 @@ Nada de UI aqui. Só domínio puro e testes.
 
 ### Fase 6 — patrimônio, taxas e simuladores
 
-30. [ ] Tela de configuração financeira (por espaço): taxa de rendimento
+30. [x] Tela de configuração financeira (por espaço): taxa de rendimento
     (CDI × % do banco, IR de 22,5% descontado), taxa de juros da dívida, meta do
     pé de meia em meses, custo mensal de sobrevivência (derivado dos essenciais,
     com override manual).
     **Pronto quando:** mudar a taxa reflete na projeção inteira sem recarregar, e
-    a config de um espaço não vaza para outro.
-31. [ ] Progresso do pé de meia: quanto falta para a meta, em R$ e em meses.
+    a config de um espaço não vaza para outro. ✅ Feito 05/08/2026 — validado ao
+    vivo: CDI 12% a.a. → preview 0,7354% a.m. em tempo real (bate com o teste
+    unitário); trocar de espaço mostra config zerada, isolada. ⚠️ **Escopo
+    reduzido conscientemente**: custo de sobrevivência é **manual** — a
+    derivação automática a partir dos essenciais exigiria marcar `Regra` como
+    "essencial" (campo que não existe no schema da Fase 1) e não é necessária
+    para o critério de pronto. Registrado como pendência, não bug.
+31. [x] Progresso do pé de meia: quanto falta para a meta, em R$ e em meses.
     **Pronto quando:** reproduz a mensagem que a planilha dá hoje
-    ("faltam R$ N para completar") a partir do estado real.
+    ("faltam R$ N para completar") a partir do estado real. ✅ Feito 05/08/2026
+    — "Faltam R$ 7.000,00 para completar o pé de meia — ≈ 4 meses no ritmo
+    atual", validado ao vivo com números reais (conferi a conta à mão: bate
+    exato). Pé de meia atual e reserva atual são **manuais** (Fase 4/fechamento
+    não existe ainda para calcular isso sozinho) — mesma régua do passo 30.
 32. [ ] Cotação automática de CDI e dólar pela **API do Banco Central**
     (`api.bcb.gov.br/dados/serie/bcdata.sgs.<id>/dados/ultimos/1?formato=json`).
     ⚠️ **Primeiro passo é medir**: conferir qual série devolve o número que bate
