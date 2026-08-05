@@ -8,6 +8,12 @@ export interface Espaco {
   nome: string
   icone?: string
   membros: Membro[]
+  /**
+   * `true` (default): caixa único, saldo comum com dono por item.
+   * `false`: dois caixas + casa rateada. Switchável — nasce `true` porque é
+   * o modo do MVP, não porque o outro modo é hipotético.
+   */
+  caixaCompartilhado: boolean
   criadoEm: string
   atualizadoEm: string
 }

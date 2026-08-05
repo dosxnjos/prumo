@@ -50,6 +50,26 @@ describe('salvar + carregar — "recarregar a página" preserva os dados', () =>
   })
 })
 
+describe('atualizarEspaco + apagarEspaco', () => {
+  it('atualiza metadados (nome, membros) sem tocar em regras/config', async () => {
+    const espaco = await storeLocal.criarEspaco('Nome antigo')
+    await storeLocal.atualizarEspaco({ ...espaco, nome: 'Nome novo' })
+
+    const lista = await storeLocal.listarEspacos()
+    const atualizado = lista.find((e) => e.id === espaco.id)
+    expect(atualizado?.nome).toBe('Nome novo')
+  })
+
+  it('apaga o espaço do índice e dos dados', async () => {
+    const espaco = await storeLocal.criarEspaco('Descartável')
+    await storeLocal.apagarEspaco(espaco.id)
+
+    const lista = await storeLocal.listarEspacos()
+    expect(lista.some((e) => e.id === espaco.id)).toBe(false)
+    await expect(storeLocal.carregar(espaco.id)).rejects.toThrow()
+  })
+})
+
 describe('espaço ativo', () => {
   it('persiste e recupera o espaço ativo', async () => {
     const espaco = await storeLocal.criarEspaco('Ativo')

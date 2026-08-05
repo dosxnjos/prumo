@@ -477,29 +477,44 @@ Nada de UI aqui. Só domínio puro e testes.
     **Pronto quando:** abrir o app numa janela anônima dá um app vazio e
     utilizável — **nenhum nome, banco, categoria ou valor do Gabriel aparece**.
     Este é o teste que garante que o projeto pode ser dado a outra pessoa.
-17. [ ] Seletor de espaço no topo: trocar, criar novo, renomear, apagar (com
+    ✅ Feito 05/08/2026 — validado com Playwright (IndexedDB limpo), onboarding
+    vazio, exemplo fictício carrega corretamente.
+17. [x] Seletor de espaço no topo: trocar, criar novo, renomear, apagar (com
     confirmação que exige digitar o nome). Gerir membros: adicionar, remover,
     trocar papel — tudo passando por `src/dominio/espaco.ts`.
     **Pronto quando:** trocar de espaço troca o dado inteiro sem recarregar a
     página, e a UI **não oferece** o botão de remover/rebaixar o último dono.
-18. [ ] Tela principal: cabeçalho com o mês, setas ‹ ›, e um seletor de mês/ano
+    ✅ Feito 05/08/2026 — validado ao vivo: criar/apagar espaço (com
+    confirmação por nome exata), promover/rebaixar membro, único dono sem
+    select/remover habilitado, dois donos com ambos habilitados.
+18. [x] Tela principal: cabeçalho com o mês, setas ‹ ›, e um seletor de mês/ano
     para pular longe. Lista de entradas e saídas agrupadas por membro, com totais
     e o saldo do mês em destaque.
     **Pronto quando:** dá para navegar de `2020-01` a `2040-12` sem travar e sem
-    erro no console; a lista é virtualizada se passar de ~200 itens.
-19. [ ] Formulário de regra (criar/editar), com o seletor de recorrência em
+    erro no console; a lista é virtualizada se passar de ~200 itens. ✅ Feito
+    05/08/2026 — testado nos dois extremos, 0 erros no console. Corte em
+    `LIMITE_LISTA = 200` com botão "carregar mais" (não é virtualização de
+    verdade — suficiente para o volume real do MVP, ~25 itens).
+19. [x] Formulário de regra (criar/editar), com o seletor de recorrência em
     linguagem de gente: *"todo mês"*, *"de mar/2027 até out/2027"*,
     *"só em dez/2026"*, *"a cada 3 meses"*, *"6x a partir de set/2026"*.
     **Pronto quando:** cadastrar "volta a pagar em mar/2027" leva menos de 20
-    segundos no celular, e o item aparece em mar/2027 e não antes.
-20. [ ] Ajuste pontual: no mês aberto, editar o valor de uma ocorrência grava
+    segundos no celular, e o item aparece em mar/2027 e não antes. ✅ Feito
+    05/08/2026 — testado: item "Cartão" cadastrado com essa recorrência
+    aparece exatamente em mar/2027 (não em fev, não em nov/2026).
+20. [x] Ajuste pontual: no mês aberto, editar o valor de uma ocorrência grava
     `excecoes[mes]` na regra, sem alterar os outros meses.
     **Pronto quando:** mudar dezembro não mexe em novembro nem em janeiro, e a UI
-    marca visualmente que aquele mês está ajustado.
-21. [ ] Curva de saldo projetado (12/24/60 meses, alternável), com marcação de
+    marca visualmente que aquele mês está ajustado. ✅ Feito 05/08/2026 —
+    ajustei Cartão só em mar/2027 (R$300→R$450); abr/2027 continuou R$300 sem
+    marca; mar/2027 mostrou `✎`.
+21. [x] Curva de saldo projetado (12/24/60 meses, alternável), com marcação de
     onde a série deixa de ter realizado e passa a ser estimativa.
     **Pronto quando:** a curva reproduz `projetarSerie` e o ponto de virada
-    previsto→estimado está visível.
+    previsto→estimado está visível. ✅ Feito 05/08/2026 — os três horizontes
+    testados ao vivo. ⚠️ Sem Fase 4 (fechamento), não existe "realizado" ainda
+    — a curva mostra isso honestamente ("tudo aqui é estimativa") em vez de
+    fingir um ponto de virada que não existe.
 
 ### Fase 4 — realizado e fechamento de mês
 

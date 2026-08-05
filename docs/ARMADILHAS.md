@@ -1,5 +1,59 @@
 # Armadilhas — Prumo
 
+## `ContextoEspaco.tsx`: closure stale sobre `espacoAtivo`/`espacos` do React state
+
+**Sintoma (achado testando ao vivo com Playwright, Fase 3):** escolher
+"carregar exemplo fictício" no onboarding criava o espaço, mas o mês vinha
+sempre vazio — as regras do exemplo nunca apareciam, mesmo depois de
+recarregar a página.
+
+**Causa:** dentro de `Onboarding.confirmar()`, a sequência é `criarEspaco()`
+→ `atualizarEspacoAtivo()` → `salvarRegras()`, todas obtidas de `useEspaco()`
+**uma única vez**, no topo do componente. Cada uma dessas funções é recriada
+(`useCallback`) toda vez que o `ProvedorEspaco` re-renderiza — mas dentro de
+uma função assíncrona já em execução, a referência capturada não muda nunca,
+mesmo que o Provider tenha re-renderizado internamente enquanto o `await`
+estava pendente. `salvarRegras` fechava sobre `espacoAtivo` (do render
+**anterior** à criação do espaço, portanto `null`) para decidir se atualizava
+o `dados` exibido — a gravação no IndexedDB acontecia certinho, só a UI não
+refletia.
+
+**Correção:** nenhuma função do contexto pode decidir o que fazer com base em
+`espacoAtivo`/`espacos` do React state. Toda decisão lê fresco do storage
+(`storeLocal.listarEspacos()`, `obterEspacoAtivoId()`) a cada chamada.
+`salvarRegras` e `selecionarEspaco` passaram a receber `espacoId` explícito
+como parâmetro, nunca implícito via closure.
+
+**Regra geral para o resto do app:** qualquer fluxo assíncrono de múltiplos
+passos que usa `useEspaco()` uma vez no topo do componente e depois faz
+várias chamadas em sequência é candidato a esse bug. Prevenção: as funções
+expostas pelo contexto nunca devem depender de estado React capturado por
+closure para decidir *o quê* fazer — só para decidir *se* devem re-renderizar
+no fim.
+
+## `ContextoEspaco.tsx` quebra o Fast Refresh do Vite (HMR)
+
+**Sintoma:** console mostra repetidamente `Could not Fast Refresh ("useEspaco"
+export is incompatible)` a cada edição salva com o dev server rodando.
+Depois de várias edições acumuladas, interações no browser (ex. `<input
+type="month">`) pararam de disparar `onChange` — sintoma de módulo em estado
+inconsistente por HMR parcial.
+
+**Causa:** o arquivo exporta tanto o componente (`ProvedorEspaco`) quanto uma
+função não-componente (`useEspaco`). O Fast Refresh do React só consegue
+substituir com segurança um módulo que exporta *só* componentes.
+
+**Mitigação usada nesta sessão:** confiar em Fast Refresh é arriscado para
+qualquer interação que pareça "não disparar" durante uma sessão longa de dev
+— fazer um **reload completo da página** (não confiar em HMR acumulado) antes
+de concluir que algo é bug real. Resolvido isso, o comportamento ficou
+correto.
+
+**Correção estrutural, não feita ainda (baixo risco, cosmética):** separar
+`useEspaco` para um arquivo próprio (ex. `useEspaco.ts`), deixando
+`ContextoEspaco.tsx` só com o componente `ProvedorEspaco`. Pendência aberta,
+não bloqueia a Fase 3.
+
 ## MCP `github` autentica como a conta corporativa, não `dosxnjos`
 
 **Sintoma:** `mcp__github__create_repository` criou o repo em

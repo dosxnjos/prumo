@@ -11,6 +11,7 @@ function espacoComMembros(...membros: Membro[]): Espaco {
     id: 'espaco-1',
     nome: 'Casa',
     membros,
+    caixaCompartilhado: true,
     criadoEm: '2026-01-01T00:00:00.000Z',
     atualizadoEm: '2026-01-01T00:00:00.000Z',
   }

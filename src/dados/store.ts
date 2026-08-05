@@ -23,6 +23,9 @@ export interface Store {
   carregar(espacoId: string): Promise<DadosEspaco>
   salvar(espacoId: string, dados: DadosEspaco): Promise<void>
   criarEspaco(nome: string): Promise<Espaco>
+  /** Atualiza metadados do espaço (nome, membros, caixaCompartilhado). */
+  atualizarEspaco(espaco: Espaco): Promise<void>
+  apagarEspaco(espacoId: string): Promise<void>
   exportarJSON(espacoId: string): Promise<string>
   /** Sempre cria um espaço NOVO (id regerado) — nunca sobrescreve um existente. */
   importarJSON(texto: string): Promise<Espaco>

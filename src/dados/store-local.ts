@@ -1,4 +1,4 @@
-import { createStore, get, set } from 'idb-keyval'
+import { createStore, del, get, set } from 'idb-keyval'
 import type { Espaco } from '../dominio/tipos'
 import type { DadosEspaco, Store } from './store'
 
@@ -61,6 +61,7 @@ export const storeLocal: Store = {
       id: crypto.randomUUID(),
       nome,
       membros: [],
+      caixaCompartilhado: true,
       criadoEm: agora,
       atualizadoEm: agora,
     }
@@ -68,6 +69,18 @@ export const storeLocal: Store = {
     await salvarIndice([...indice, espaco])
     await this.salvar(espaco.id, { regras: [], config: configPadrao() })
     return espaco
+  },
+
+  async atualizarEspaco(espaco) {
+    const indice = await lerIndice()
+    const atualizado = { ...espaco, atualizadoEm: new Date().toISOString() }
+    await salvarIndice(indice.map((e) => (e.id === espaco.id ? atualizado : e)))
+  },
+
+  async apagarEspaco(espacoId) {
+    const indice = await lerIndice()
+    await salvarIndice(indice.filter((e) => e.id !== espacoId))
+    await del(chaveEspaco(espacoId), db)
   },
 
   async exportarJSON(espacoId) {

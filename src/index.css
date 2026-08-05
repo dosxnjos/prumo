@@ -32,3 +32,339 @@ h1 {
   font-weight: 500;
   color: var(--text-h);
 }
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --linha: #e5e4e7;
+  --entrada: #2e7d32;
+  --saida: #c62828;
+  --dono: #aa3bff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --linha: #2e303a;
+    --entrada: #66bb6a;
+    --saida: #ef5350;
+    --dono: #c084fc;
+  }
+}
+
+button {
+  font: inherit;
+  font-weight: 500;
+  color: inherit;
+  background: transparent;
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 0.5em 0.9em;
+  cursor: pointer;
+}
+
+input,
+select {
+  font: inherit;
+  color: inherit;
+  background: var(--bg);
+  border: 1px solid var(--linha);
+  border-radius: 6px;
+  padding: 0.4em 0.6em;
+}
+
+.app-shell {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 12px 32px;
+}
+
+.topo-app {
+  padding: 12px 0;
+  border-bottom: 1px solid var(--linha);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+}
+
+.nome-espaco {
+  font-size: 1.1em;
+  font-weight: 500;
+}
+
+.cabecalho-mes {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 16px 0;
+}
+
+.mes-atual {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.1em;
+}
+
+.mes-atual input[type='month'] {
+  opacity: 0;
+  width: 1px;
+  position: absolute;
+}
+
+.resumo-mes {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.9em;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.saldo.positivo {
+  color: var(--entrada);
+  font-weight: 500;
+}
+
+.saldo.negativo {
+  color: var(--saida);
+  font-weight: 500;
+}
+
+.nova-regra {
+  width: 100%;
+  margin-bottom: 16px;
+}
+
+.grupo-membro h2 {
+  font-size: 0.95em;
+  font-weight: 500;
+  border-left: 3px solid;
+  padding-left: 8px;
+  margin: 16px 0 4px;
+}
+
+.grupo-membro ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.grupo-membro li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--linha);
+}
+
+.nome-item {
+  flex: 1;
+  text-align: left;
+  border: none;
+  padding: 0;
+}
+
+.valor.entrada {
+  color: var(--entrada);
+}
+
+.valor.saida {
+  color: var(--saida);
+}
+
+.marca-ajuste {
+  margin-left: 4px;
+  opacity: 0.7;
+}
+
+li.ajustado {
+  background: color-mix(in srgb, var(--dono) 8%, transparent);
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: flex-end;
+  z-index: 10;
+}
+
+.formulario-regra,
+.ajuste-pontual,
+.painel-espacos {
+  background: var(--bg);
+  border-radius: 16px 16px 0 0;
+  padding: 20px;
+  width: 100%;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.formulario-regra label,
+.ajuste-pontual label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+
+.opcao-recorrencia {
+  flex-direction: row !important;
+  align-items: center;
+  gap: 6px !important;
+  font-size: 0.9em;
+}
+
+.acoes {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+
+.erro {
+  color: var(--saida);
+  font-size: 0.9em;
+}
+
+.curva-saldo {
+  margin-top: 24px;
+  border-top: 1px solid var(--linha);
+  padding-top: 16px;
+}
+
+.curva-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.opcoes-horizonte button.selecionado {
+  border-color: var(--dono);
+  color: var(--dono);
+}
+
+.grafico-curva {
+  width: 100%;
+  height: 120px;
+  margin: 12px 0;
+}
+
+.linha-curva {
+  stroke: var(--dono);
+  stroke-width: 2;
+}
+
+.linha-zero {
+  stroke: var(--linha);
+  stroke-width: 1;
+}
+
+.ponto-hoje {
+  fill: var(--dono);
+}
+
+.legenda-curva {
+  font-size: 0.85em;
+  opacity: 0.8;
+}
+
+.extremos-curva {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85em;
+}
+
+.onboarding {
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 24px 16px;
+}
+
+.onboarding section {
+  margin-bottom: 20px;
+}
+
+.onboarding label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 6px;
+}
+
+.linha-membro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.cores {
+  display: flex;
+  gap: 4px;
+}
+
+.cor {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  padding: 0;
+}
+
+.cor.selecionada {
+  border-color: var(--text-h);
+}
+
+.confirmar {
+  width: 100%;
+  background: var(--dono);
+  color: white;
+  border: none;
+  font-weight: 500;
+}
+
+.lista-espacos {
+  list-style: none;
+  padding: 0;
+}
+
+.lista-espacos button.selecionado {
+  border-color: var(--dono);
+  color: var(--dono);
+}
+
+.lista-membros {
+  list-style: none;
+  padding: 0;
+}
+
+.lista-membros li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 0;
+}
+
+.ponto-cor {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.linha-criar {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 8px 0;
+}
+
+button.apagar,
+button.remover {
+  border-color: var(--saida);
+  color: var(--saida);
+}
