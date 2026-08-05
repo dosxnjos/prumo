@@ -35,14 +35,19 @@ function Conteudo() {
         </button>
       </header>
 
-      <TelaMes
-        onEditarRegra={(regra) => setModal({ tipo: 'regra', regra })}
-        onAjustarOcorrencia={(regra, mes) => setModal({ tipo: 'ajuste', regra, mes })}
-      />
+      <div className="corpo-app">
+        <div className="coluna-principal">
+          <TelaMes
+            onEditarRegra={(regra) => setModal({ tipo: 'regra', regra })}
+            onAjustarOcorrencia={(regra, mes) => setModal({ tipo: 'ajuste', regra, mes })}
+          />
+        </div>
 
-      <ProgressoPeDeMeia />
-
-      <CurvaSaldo />
+        <div className="coluna-lateral">
+          <ProgressoPeDeMeia />
+          <CurvaSaldo />
+        </div>
+      </div>
 
       {modal?.tipo === 'espacos' && <PainelEspacos onFechar={() => setModal(null)} />}
       {modal?.tipo === 'regra' && <FormularioRegra regra={modal.regra} onFechar={() => setModal(null)} />}
