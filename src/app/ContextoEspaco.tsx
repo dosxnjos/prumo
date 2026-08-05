@@ -21,6 +21,9 @@ interface EstadoEspaco {
    */
   salvarRegras: (espacoId: string, regras: Regra[]) => Promise<void>
   salvarConfig: (espacoId: string, config: ConfigFinanceira) => Promise<void>
+  exportarEspaco: (espacoId: string) => Promise<string>
+  /** Sempre cria um espaço NOVO (id regerado) — nunca sobrescreve um existente. */
+  importarEspaco: (texto: string) => Promise<Espaco>
   recarregar: () => Promise<void>
 }
 
@@ -114,6 +117,15 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     [salvarDados],
   )
 
+  const exportarEspaco = useCallback((espacoId: string) => storeLocal.exportarJSON(espacoId), [])
+
+  const importarEspaco = useCallback(async (texto: string) => {
+    const novo = await storeLocal.importarJSON(texto)
+    await definirEspacoAtivoId(novo.id)
+    await recarregar()
+    return novo
+  }, [recarregar])
+
   const valor = useMemo<EstadoEspaco>(() => ({
     carregando,
     espacos,
@@ -125,8 +137,10 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     apagarEspaco,
     salvarRegras,
     salvarConfig,
+    exportarEspaco,
+    importarEspaco,
     recarregar,
-  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, recarregar])
+  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, exportarEspaco, importarEspaco, recarregar])
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>
 }

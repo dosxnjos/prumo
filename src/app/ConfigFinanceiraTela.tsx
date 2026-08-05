@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useEspaco } from './ContextoEspaco'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
 import { metaPeDeMeiaCentavos, taxaRendimentoMensalDeCDI } from '../dominio/config'
@@ -13,13 +13,42 @@ function paraTextoMoeda(centavos: number): string {
 }
 
 export function ConfigFinanceiraTela({ onFechar }: Props) {
-  const { espacoAtivo, dados, salvarConfig } = useEspaco()
+  const { espacoAtivo, dados, salvarConfig, exportarEspaco, importarEspaco } = useEspaco()
   const configInicial = dados?.config
   const [config, setConfig] = useState<ConfigFinanceira | null>(configInicial ?? null)
   const [custoTexto, setCustoTexto] = useState(configInicial ? paraTextoMoeda(configInicial.custoSobrevivenciaCentavos) : '')
   const [peDeMeiaTexto, setPeDeMeiaTexto] = useState(configInicial ? paraTextoMoeda(configInicial.peDeMeiaAtualCentavos) : '')
   const [reservaTexto, setReservaTexto] = useState(configInicial ? paraTextoMoeda(configInicial.reservaAtualCentavos) : '')
   const [salvando, setSalvando] = useState(false)
+  const [mensagemBackup, setMensagemBackup] = useState<string | null>(null)
+  const inputArquivoRef = useRef<HTMLInputElement>(null)
+
+  async function exportar() {
+    if (!espacoAtivo) return
+    const json = await exportarEspaco(espacoAtivo.id)
+    const blob = new Blob([json], { type: 'application/json' })
+    const url = URL.createObjectURL(blob)
+    const nomeArquivo = `prumo-${espacoAtivo.nome.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.json`
+    const link = document.createElement('a')
+    link.href = url
+    link.download = nomeArquivo
+    link.click()
+    URL.revokeObjectURL(url)
+  }
+
+  async function importarArquivo(e: React.ChangeEvent<HTMLInputElement>) {
+    const arquivo = e.target.files?.[0]
+    e.target.value = ''
+    if (!arquivo) return
+    setMensagemBackup(null)
+    try {
+      const texto = await arquivo.text()
+      const novo = await importarEspaco(texto)
+      setMensagemBackup(`Importado como novo espaço: "${novo.nome}". Nada foi sobrescrito.`)
+    } catch {
+      setMensagemBackup('Não consegui importar esse arquivo — confere se é um backup do Prumo.')
+    }
+  }
 
   if (!config || !espacoAtivo) return null
 
@@ -137,6 +166,27 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
             salvar
           </button>
         </div>
+
+        <hr />
+        <p className="subtitulo">
+          Backup — o dado só existe neste navegador. Exportar é a única cópia
+          de segurança.
+        </p>
+
+        <div className="linha-criar">
+          <button type="button" onClick={exportar}>exportar backup (JSON)</button>
+          <button type="button" onClick={() => inputArquivoRef.current?.click()}>
+            importar backup (JSON)
+          </button>
+          <input
+            ref={inputArquivoRef}
+            type="file"
+            accept="application/json"
+            onChange={importarArquivo}
+            style={{ display: 'none' }}
+          />
+        </div>
+        {mensagemBackup && <p className="preview-derivado">{mensagemBackup}</p>}
       </div>
     </div>
   )
