@@ -475,7 +475,7 @@ Nada de UI aqui. Só domínio puro e testes.
 
 ### Fase 3 — UI do mês, espaços e onboarding (celular primeiro)
 
-16. [ ] **Onboarding com armazenamento limpo**: criar o primeiro espaço
+16. [x] **Onboarding com armazenamento limpo**: criar o primeiro espaço
     (nome, ex. "Casa"), cadastrar os membros (1, 2 ou mais, com cor), definir se
     existe caixa compartilhado, e oferecer *começar vazio* ou *carregar exemplo
     fictício*. Quem cria vira **dono**.
