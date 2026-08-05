@@ -380,6 +380,71 @@ li.ajustado {
   font-size: 0.85em;
 }
 
+.ver-detalhes {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.ponto-mes {
+  fill: var(--dono);
+  opacity: 0.6;
+}
+
+.curva-detalhada {
+  background: var(--bg);
+  border-radius: 16px;
+  padding: 20px;
+  width: 100%;
+  max-width: 960px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.curva-detalhada-cabecalho {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.grafico-curva-grande {
+  height: 220px;
+}
+
+.tabela-curva-wrapper {
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+.tabela-curva {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+  white-space: nowrap;
+}
+
+.tabela-curva th {
+  text-align: left;
+  padding: 8px;
+  border-bottom: 2px solid var(--linha);
+  font-weight: 500;
+}
+
+.tabela-curva td {
+  padding: 8px;
+  border-bottom: 1px solid var(--linha);
+}
+
+.tabela-curva th:not(:first-child),
+.tabela-curva td:not(:first-child) {
+  text-align: right;
+}
+
+.tabela-curva tr.mes-atual {
+  background: color-mix(in srgb, var(--dono) 8%, transparent);
+  font-weight: 500;
+}
+
 .onboarding {
   max-width: 480px;
   margin: 0 auto;

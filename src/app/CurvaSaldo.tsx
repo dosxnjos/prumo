@@ -1,33 +1,19 @@
-import { useMemo, useState } from 'react'
-import { useEspaco } from './ContextoEspaco'
-import { paraConfigProjecao } from '../dominio/config'
+import { useState } from 'react'
 import { formatarBRL } from '../dominio/dinheiro'
-import { mesAtual, rotulo, somarMeses } from '../dominio/mes'
-import { criarProjetorSerie } from '../dominio/projecao'
+import { rotulo } from '../dominio/mes'
+import { useSerieProjetada } from './useSerieProjetada'
 
 const OPCOES_HORIZONTE = [12, 24, 60] as const
 
-export function CurvaSaldo() {
-  const { dados } = useEspaco()
+interface Props {
+  onVerDetalhes: () => void
+}
+
+export function CurvaSaldo({ onVerDetalhes }: Props) {
   const [horizonte, setHorizonte] = useState<(typeof OPCOES_HORIZONTE)[number]>(12)
+  const serie = useSerieProjetada(horizonte)
 
-  const serie = useMemo(() => {
-    if (!dados) return []
-    const inicio = mesAtual()
-    const fim = somarMeses(inicio, horizonte - 1)
-    const estadoInicial = {
-      reserva: dados.config.reservaAtualCentavos,
-      peDeMeia: dados.config.peDeMeiaAtualCentavos,
-      divida: 0,
-    }
-    const projetarSerie = criarProjetorSerie(dados.regras, paraConfigProjecao(dados.config))
-    return projetarSerie(inicio, estadoInicial, fim).map((r, i) => ({
-      mes: somarMeses(inicio, i),
-      patrimonio: r.reservaFinal + r.peDeMeiaFinal - r.dividaFinal,
-    }))
-  }, [dados, horizonte])
-
-  if (!dados || serie.length === 0) return null
+  if (serie.length === 0) return null
 
   const valores = serie.map((p) => p.patrimonio)
   const min = Math.min(0, ...valores)
@@ -81,6 +67,10 @@ export function CurvaSaldo() {
         <span>{rotulo(serie[0].mes)}: {formatarBRL(serie[0].patrimonio)}</span>
         <span>{rotulo(serie[serie.length - 1].mes)}: {formatarBRL(serie[serie.length - 1].patrimonio)}</span>
       </div>
+
+      <button type="button" className="ver-detalhes" onClick={onVerDetalhes}>
+        ver mês a mês
+      </button>
     </section>
   )
 }

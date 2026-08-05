@@ -7,6 +7,7 @@ import { FormularioRegra } from './app/FormularioRegra'
 import { Onboarding } from './app/Onboarding'
 import { PainelEspacos } from './app/PainelEspacos'
 import { ProgressoPeDeMeia } from './app/ProgressoPeDeMeia'
+import { TelaCurvaDetalhada } from './app/TelaCurvaDetalhada'
 import { TelaMes } from './app/TelaMes'
 import type { Mes, Regra } from './dominio/tipos'
 
@@ -15,6 +16,7 @@ type ModalAberto =
   | { tipo: 'regra'; regra: Regra | null }
   | { tipo: 'ajuste'; regra: Regra; mes: Mes }
   | { tipo: 'config' }
+  | { tipo: 'curva' }
   | null
 
 function Conteudo() {
@@ -45,7 +47,7 @@ function Conteudo() {
 
         <div className="coluna-lateral">
           <ProgressoPeDeMeia />
-          <CurvaSaldo />
+          <CurvaSaldo onVerDetalhes={() => setModal({ tipo: 'curva' })} />
         </div>
       </div>
 
@@ -55,6 +57,7 @@ function Conteudo() {
         <AjustePontual regra={modal.regra} mes={modal.mes} onFechar={() => setModal(null)} />
       )}
       {modal?.tipo === 'config' && <ConfigFinanceiraTela onFechar={() => setModal(null)} />}
+      {modal?.tipo === 'curva' && <TelaCurvaDetalhada onFechar={() => setModal(null)} />}
     </div>
   )
 }
