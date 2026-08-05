@@ -319,7 +319,7 @@ depois que o app já provou valor sozinho.
 
 Nada de UI aqui. Só domínio puro e testes.
 
-6. [ ] `src/dominio/tipos.ts` — o modelo de dados:
+6. [x] `src/dominio/tipos.ts` — o modelo de dados:
 
    ```ts
    type Mes = string            // 'AAAA-MM'
@@ -363,24 +363,24 @@ Nada de UI aqui. Só domínio puro e testes.
    nenhum nome no código. `espacoId` entra em **toda** entidade de dado (regra,
    lançamento, cartão, compra, fechamento, config).
    **Pronto quando:** `docs/modelo-de-dados.md` descreve cada campo e a tabela de
-   tradução da operação antiga (abaixo) está lá.
+   tradução da operação antiga (abaixo) está lá. ✅ Feito 05/08/2026.
 
-7. [ ] `src/dominio/espaco.ts` — invariantes do espaço, puras e testadas:
+7. [x] `src/dominio/espaco.ts` — invariantes do espaço, puras e testadas:
    `podeRemover(espaco, membroId)`, `podeRebaixar(espaco, membroId)`,
    `removerMembro`, `alterarPapel`, `adicionarMembro`.
    ⚠️ **A trava do último dono mora aqui**, não na UI.
    **Pronto quando:** teste prova que remover ou rebaixar o único dono **lança
-   erro**, e que com dois donos a operação passa.
+   erro**, e que com dois donos a operação passa. ✅ Feito 05/08/2026 — 6 testes.
 
-8. [ ] `src/dominio/recorrencia.ts` — `ocorreEm(regra, mes): boolean` e
+8. [x] `src/dominio/recorrencia.ts` — `ocorreEm(regra, mes): boolean` e
    `valorEm(regra, mes): number`. Uma regra `parcelada` de N parcelas gera a
    parcela k no mês `inicio + (k−1)`, com o resto do arredondamento na última.
    **Pronto quando:** existe um teste por tipo de recorrência, incluindo:
    `fim` anterior ao `inicio` (não ocorre nunca), `periodica` com
    `aCadaMeses: 3`, exceção `pular`, exceção com valor diferente, e regra
-   `ativa: false`.
+   `ativa: false`. ✅ Feito 05/08/2026 — 12 testes, todas as bordas pedidas.
 
-9. [ ] **Tabela de tradução da planilha antiga** — gravar em
+9. [x] **Tabela de tradução da planilha antiga** — gravar em
    `docs/modelo-de-dados.md`, porque é como o Gabriel vai recadastrar os itens:
 
    | operação antiga | recorrência nova |
@@ -395,9 +395,10 @@ Nada de UI aqui. Só domínio puro e testes.
    | `n0` | `mensal`, de mês + n, `fim: null` |
 
    **Pronto quando:** a tabela está no doc e cada linha tem um teste
-   correspondente provando a equivalência.
+   correspondente provando a equivalência. ✅ Feito 05/08/2026 — 8 testes, um
+   por linha da tabela.
 
-10. [ ] `src/dominio/projecao.ts` — `projetarMes({ mes, estadoAnterior, regras,
+10. [x] `src/dominio/projecao.ts` — `projetarMes({ mes, estadoAnterior, regras,
     cartoes, config })` devolvendo `{ ocorrencias[], totalEntradas, totalSaidas,
     saldo, aporteReserva, reservaFinal, peDeMeiaFinal, dividaFinal, jurosPagos }`.
 
@@ -419,20 +420,26 @@ Nada de UI aqui. Só domínio puro e testes.
     sobra acima da meta, falta coberta pela reserva, falta que vira dívida) e um
     teste de 24 meses seguidos prova que reserva + pé de meia − dívida nunca
     diverge do somatório dos saldos mensais mais o rendimento acumulado.
+    ✅ Feito 05/08/2026 — 7 testes, incluindo os 4 caminhos e o de 24 meses.
+    ⚠️ Desvio consciente da assinatura: `cartoes` **não** entrou no parâmetro
+    (o tipo `Cartao` só nasce na Fase 5) — YAGNI, sem custo para retomar depois.
 
-11. [ ] `projetarSerie(mesInicio, mesFim, estadoInicial, ...)` — encadeia
+11. [x] `projetarSerie(mesInicio, mesFim, estadoInicial, ...)` — encadeia
     `projetarMes`, com memo por mês. Ponto de partida do encadeamento é o último
     **fechamento** gravado (Fase 4) ou o mês de início configurado.
     **Pronto quando:** projetar 600 meses (50 anos) leva menos de 100 ms na
     máquina do Gabriel — medir e anotar o número em `docs/modelo-de-dados.md`,
-    não presumir.
+    não presumir. ✅ Feito 05/08/2026 — medido ~3ms (teto: 100ms).
 
-12. [ ] **Teste de paridade com a planilha** (roda local, não vai para o git):
+12. [x] **Teste de paridade com a planilha** (roda local, não vai para o git):
     reproduzir em `fixtures/local/` os itens reais do mês corrente e conferir se
     a projeção de 12 meses bate com as abas `P1`…`P12`.
     **Pronto quando:** as diferenças estão explicadas item a item — divergência
     esperada é aceitável (o app corrige defeitos conhecidos), divergência
-    inexplicada é bug. Registrar o veredito em `docs/ARMADILHAS.md`.
+    inexplicada é bug. Registrar o veredito em `docs/ARMADILHAS.md`. ✅ Feito
+    05/08/2026 — mês atual bate exato; P1-P12 divergem por cache de fórmula
+    desatualizado no arquivo exportado (não é bug do motor). Veredito completo
+    em `docs/ARMADILHAS.md`.
 
 ### Fase 2 — persistência local e portabilidade
 
