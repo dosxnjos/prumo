@@ -443,24 +443,30 @@ Nada de UI aqui. Só domínio puro e testes.
 
 ### Fase 2 — persistência local e portabilidade
 
-13. [ ] `src/dados/store.ts` — interface `Store` (assíncrona, mesmo local):
+13. [x] `src/dados/store.ts` — interface `Store` (assíncrona, mesmo local):
     `listarEspacos()`, `carregar(espacoId)`, `salvar(espacoId, dados)`,
     `criarEspaco(nome)`, `exportarJSON(espacoId)`, `importarJSON(texto)`.
     **Toda a UI fala só com esta interface** — é a única fronteira que o módulo
     online vai trocar.
     **Pronto quando:** nenhum arquivo em `src/ui/` ou `src/app/` importa
-    `store-local` diretamente; só `store`.
-14. [ ] `src/dados/store-local.ts` — implementação sobre IndexedDB
+    `store-local` diretamente; só `store`. ✅ Feito 05/08/2026 — ainda não há
+    UI (Fase 3), então a regra vale por construção; será checada de novo
+    quando a UI existir.
+14. [x] `src/dados/store-local.ts` — implementação sobre IndexedDB
     (`idb-keyval`, dep pequena e madura). **Um registro por espaço**, mais um
     índice de espaços e o `espacoAtivoId`. Estado serializado com
     `schemaVersion: 1` e função de migração vazia já no lugar.
     **Pronto quando:** recarregar a página preserva os dados e o espaço ativo; um
     estado de `schemaVersion` desconhecida falha alto em vez de corromper.
-15. [ ] Export/import de JSON por espaço (botão em Configurações). O arquivo
+    ✅ Feito 05/08/2026 — 7 testes (vitest + `fake-indexeddb`), incluindo
+    "reload" simulado e `schemaVersion` desconhecida lançando erro.
+15. [x] Export/import de JSON por espaço (botão em Configurações). O arquivo
     exportado carrega `{ schemaVersion, espaco, dados }`.
     **Pronto quando:** exportar num navegador e importar em outro reconstrói o
     espaço idêntico, **como espaço novo** (id regerado, sem sobrescrever o
     existente). É o backup, a troca de aparelho e a ponte para o sync.
+    ✅ Feito 05/08/2026 — testado junto com o passo 14; o botão em
+    Configurações (UI) fica para a Fase 3.
 
 ### Fase 3 — UI do mês, espaços e onboarding (celular primeiro)
 
