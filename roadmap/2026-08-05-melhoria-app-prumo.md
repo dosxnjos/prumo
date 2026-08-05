@@ -285,30 +285,35 @@ depois que o app já provou valor sozinho.
 
 ### Fase 0 — fundação do projeto
 
-1. [ ] Criar o esqueleto em `C:\Dev\prumo`: `npm create vite@latest . --
+1. [x] Criar o esqueleto em `C:\Dev\prumo`: `npm create vite@latest . --
    --template react-ts`, remover o boilerplate de exemplo. `package.json` com
    `"name": "prumo"`.
    **Pronto quando:** `npm run dev` sobe uma página com o título "Prumo" e
-   `npm run build` passa sem erro de tipo.
-2. [ ] Estrutura de pastas (criar já, mesmo vazias):
+   `npm run build` passa sem erro de tipo. ✅ Feito 05/08/2026 — dev/build
+   verdes, boilerplate de exemplo removido.
+2. [x] Estrutura de pastas (criar já, mesmo vazias):
    `src/dominio/` (tipos + motor puro), `src/dados/` (persistência),
    `src/ui/` (componentes), `src/app/` (telas), `docs/`, `roadmap/`.
    **Pronto quando:** existe um `docs/modelo-de-dados.md` (pode ser stub) e o
-   `tsconfig` tem `strict: true`.
-3. [ ] `.gitignore` com `node_modules/`, `dist/`, **`dados-locais/`**,
+   `tsconfig` tem `strict: true`. ✅ Feito 05/08/2026 — `strict: true` adicionado
+   ao `tsconfig.app.json` (não vinha por padrão no template).
+3. [x] `.gitignore` com `node_modules/`, `dist/`, **`dados-locais/`**,
    **`*.local.json`**, **`fixtures/local/`**.
    **Pronto quando:** `git status --porcelain` numa pasta com dado local de teste
    não mostra o arquivo. ⚠️ Fazer **antes** de qualquer `git init` — o repo vai
-   ser público e commit é para sempre.
-4. [ ] `src/dominio/dinheiro.ts` — centavos inteiros: `paraCentavos(str)`,
+   ser público e commit é para sempre. ✅ Feito 05/08/2026 — validado com arquivo
+   de teste antes do `git init`.
+4. [x] `src/dominio/dinheiro.ts` — centavos inteiros: `paraCentavos(str)`,
    `formatarBRL(centavos)`, `somar`, `ratear(total, partes)` (rateio que
    distribui o resto, sem perder centavo).
    **Pronto quando:** teste prova que `ratear(35000, 3)` devolve `[11667, 11667,
-   11666]` e a soma bate exatamente com o total.
-5. [ ] `src/dominio/mes.ts` — aritmética de competência `AAAA-MM` como string
+   11666]` e a soma bate exatamente com o total. ✅ Feito 05/08/2026 — 9 testes,
+   todos verdes.
+5. [x] `src/dominio/mes.ts` — aritmética de competência `AAAA-MM` como string
    ordenável: `mesAtual()`, `somarMeses(mes, n)`, `diffMeses(a, b)`,
    `intervalo(de, ate)`, `rotulo(mes)` (`"set/2026"`).
    **Pronto quando:** testes cobrem virada de ano nos dois sentidos e `n` negativo.
+   ✅ Feito 05/08/2026 — 14 testes, todos verdes.
 
 ### Fase 1 — o motor de projeção (o coração)
 
