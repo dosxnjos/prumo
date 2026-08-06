@@ -12,6 +12,12 @@ dist
 dist-ssr
 *.local
 
+# artefatos de build do app desktop (pake/Tauri) — refazer com
+# docs/empacotar-desktop.md, nunca versionar binário
+build-assets/
+*.msi
+*.exe
+
 # dado local/pessoal — nunca vai para o repo (que vai ser público)
 dados-locais/
 *.local.json
