@@ -1,32 +1,62 @@
-# React + TypeScript + Vite
+# Prumo
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Finanças da casa, no prumo. App de finanças pessoais local-first: substitui
+a planilha de fluxo de caixa por um motor de recorrência em data absoluta
+(nada de "daqui a 7 meses" — é "volta a pagar em mar/2027").
 
-Currently, two official plugins are available:
+⚠️ **Nada dos seus dados sai do navegador.** Não há servidor, não há conta,
+não há nuvem. Tudo fica no IndexedDB local. Isso significa que **você é o
+único backup** — use o botão de exportar (Configurações ⚙︎) com frequência.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+> Este README cobre o setup técnico. Um guia para quem não mexe com código
+> ainda não existe (é um passo futuro do roadmap).
 
-## React Compiler
+## Rodando localmente
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+Pré-requisito: **Node `^20.19.0` ou `>=22.12.0`**.
 
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
-
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+```bash
+git clone <url-do-repo>
+cd prumo
+npm install
+npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+Abre em `http://localhost:5173` (ou a próxima porta livre). Testado e
+funcionando em Windows e macOS (Apple Silicon incluso — as dependências
+nativas, Vite/rolldown e oxlint, têm binário para `darwin-arm64`).
+
+## Scripts
+
+| comando | o que faz |
+| --- | --- |
+| `npm run dev` | sobe o servidor de desenvolvimento |
+| `npm run build` | build de produção em `dist/` (typecheck + bundle) |
+| `npm test` | roda a suíte de testes (vitest) |
+| `npm run lint` | lint (oxlint) |
+| `npm run preview` | serve o `dist/` já buildado, para conferir antes de publicar |
+
+## Estrutura
+
+- `src/dominio/` — motor puro (tipos, recorrência, projeção, dinheiro). Sem
+  React, sem IO. É o coração testado do app.
+- `src/dados/` — persistência (interface `Store` + implementação sobre
+  IndexedDB). Única fronteira que um módulo online trocaria no futuro.
+- `src/app/` — telas e componentes React.
+- `docs/` — como funciona, armadilhas conhecidas, como empacotar como app
+  desktop.
+- `roadmap/` — o roadmap completo do projeto, com o que já foi feito e o
+  que falta.
+
+## App desktop (opcional)
+
+Dá para empacotar como app instalável (Windows/macOS/Linux via Tauri) — ver
+[`docs/empacotar-desktop.md`](docs/empacotar-desktop.md). O app desktop usa
+um perfil de navegador isolado: não compartilha dados com o navegador
+comum, então a migração é via exportar/importar JSON.
+
+## Estado do projeto
+
+Marco A ("chega de planilha") está completo — ver
+[`roadmap/2026-08-05-melhoria-app-prumo.md`](roadmap/2026-08-05-melhoria-app-prumo.md)
+para o roadmap inteiro, decisões de arquitetura e o que ainda falta.
