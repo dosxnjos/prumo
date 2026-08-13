@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 import { useEspaco } from './useEspaco'
 import { Modal } from './Modal'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
@@ -14,45 +14,13 @@ function paraTextoMoeda(centavos: number): string {
 }
 
 export function ConfigFinanceiraTela({ onFechar }: Props) {
-  const { espacoAtivo, dados, salvarConfig, exportarEspaco, importarEspaco } = useEspaco()
+  const { espacoAtivo, dados, salvarConfig } = useEspaco()
   const configInicial = dados?.config
   const [config, setConfig] = useState<ConfigFinanceira | null>(configInicial ?? null)
   const [custoTexto, setCustoTexto] = useState(configInicial ? paraTextoMoeda(configInicial.custoSobrevivenciaCentavos) : '')
   const [peDeMeiaTexto, setPeDeMeiaTexto] = useState(configInicial ? paraTextoMoeda(configInicial.peDeMeiaAtualCentavos) : '')
   const [reservaTexto, setReservaTexto] = useState(configInicial ? paraTextoMoeda(configInicial.reservaAtualCentavos) : '')
   const [salvando, setSalvando] = useState(false)
-  const [mensagemBackup, setMensagemBackup] = useState<string | null>(null)
-  const inputArquivoRef = useRef<HTMLInputElement>(null)
-
-  async function exportar() {
-    if (!espacoAtivo) return
-    const json = await exportarEspaco(espacoAtivo.id)
-    const blob = new Blob([json], { type: 'application/json' })
-    const url = URL.createObjectURL(blob)
-    const nomeArquivo = `prumo-${espacoAtivo.nome.toLowerCase().replace(/\s+/g, '-')}-${new Date().toISOString().slice(0, 10)}.json`
-    const link = document.createElement('a')
-    link.href = url
-    link.download = nomeArquivo
-    link.click()
-    URL.revokeObjectURL(url)
-  }
-
-  async function importarArquivo(e: React.ChangeEvent<HTMLInputElement>) {
-    const arquivo = e.target.files?.[0]
-    e.target.value = ''
-    if (!arquivo) return
-    setMensagemBackup(null)
-    try {
-      const texto = await arquivo.text()
-      const novo = await importarEspaco(texto)
-      setMensagemBackup(
-        `Importado como novo espaço: "${novo.nome}". Nada foi sobrescrito — confere o espaço novo; ` +
-          'se estiver tudo lá, apaga o antigo em Espaços → apagar.',
-      )
-    } catch {
-      setMensagemBackup('Não consegui importar esse arquivo — confere se é um backup do Prumo.')
-    }
-  }
 
   if (!config || !espacoAtivo) return null
 
@@ -91,8 +59,11 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
 
   return (
     <Modal onFechar={onFechar} onSubmit={salvar} className="config-financeira" titulo="Configuração financeira">
-        <h2>Configuração financeira</h2>
-        <p className="subtitulo">vale só para o espaço "{espacoAtivo.nome}"</p>
+      <h2>Configuração financeira</h2>
+      <p className="subtitulo">vale só para o espaço "{espacoAtivo.nome}"</p>
+
+      <fieldset className="secao-config">
+        <legend>Rendimento</legend>
 
         <label>
           CDI ao ano (%)
@@ -113,10 +84,15 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
             onChange={(e) => atualizar('percentualBanco', Number(e.target.value))}
           />
         </label>
+        <p className="microcopy">não sabe o % do banco? 100% é o comum.</p>
 
         <p className="preview-derivado">
           taxa de rendimento líquida (IR 22,5% descontado): <strong>{(taxaPreview * 100).toFixed(4)}% a.m.</strong>
         </p>
+      </fieldset>
+
+      <fieldset className="secao-config">
+        <legend>Dívida</legend>
 
         <label>
           Taxa de juros da dívida (% ao mês)
@@ -127,6 +103,11 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
             onChange={(e) => atualizar('taxaJurosDividaMensal', Number(e.target.value) / 100)}
           />
         </label>
+        <p className="microcopy">não tem dívida (ou não sabe a taxa)? deixa 0.</p>
+      </fieldset>
+
+      <fieldset className="secao-config">
+        <legend>Meta</legend>
 
         <label>
           Meta do pé de meia (em meses de sobrevivência)
@@ -142,15 +123,18 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
           Custo mensal de sobrevivência
           <input value={custoTexto} onChange={(e) => setCustoTexto(e.target.value)} placeholder="0,00" inputMode="decimal" />
         </label>
+        <p className="microcopy">quanto você gasta por mês pra se manter, sem luxo — a base da meta.</p>
 
         <p className="preview-derivado">
           meta do pé de meia: <strong>{formatarBRL(metaPreview)}</strong>
         </p>
+      </fieldset>
 
-        <hr />
+      <fieldset className="secao-config">
+        <legend>Estado atual</legend>
         <p className="subtitulo">
-          ⚠️ estado atual — digitado à mão, porque o fechamento de mês (Fase 4)
-          ainda não existe para calcular isso sozinho
+          ⚠️ digitado à mão, porque o fechamento de mês (Fase 4) ainda não
+          existe para calcular isso sozinho
         </p>
 
         <label>
@@ -162,35 +146,14 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
           Reserva livre atual
           <input value={reservaTexto} onChange={(e) => setReservaTexto(e.target.value)} placeholder="0,00" inputMode="decimal" />
         </label>
+      </fieldset>
 
-        <div className="acoes">
-          <button type="button" onClick={onFechar}>cancelar</button>
-          <button type="submit" className="salvar" disabled={salvando}>
-            salvar
-          </button>
-        </div>
-
-        <hr />
-        <p className="subtitulo">
-          Backup — o dado só existe neste navegador. Exportar é a única cópia
-          de segurança.
-        </p>
-
-        <div className="linha-criar">
-          <button type="button" onClick={exportar}>exportar backup (JSON)</button>
-          <button type="button" onClick={() => inputArquivoRef.current?.click()}>
-            importar backup (JSON)
-          </button>
-          <input
-            ref={inputArquivoRef}
-            type="file"
-            accept="application/json"
-            onChange={importarArquivo}
-            style={{ display: 'none' }}
-          />
-        </div>
-        {mensagemBackup && <p className="preview-derivado">{mensagemBackup}</p>}
+      <div className="acoes">
+        <button type="button" onClick={onFechar}>cancelar</button>
+        <button type="submit" className="salvar" disabled={salvando}>
+          salvar
+        </button>
+      </div>
     </Modal>
   )
 }
-

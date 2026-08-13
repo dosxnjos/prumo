@@ -12,7 +12,7 @@ interface Props {
 
 /**
  * U8: componente compartilhado pelos overlays (`FormularioRegra`,
- * `PainelEspacos`, `ConfigFinanceiraTela`, `TelaCurvaDetalhada`) —
+ * `TrocarEspaco`, `GerenciarEspaco`, `ConfigFinanceiraTela`, `TelaCurvaDetalhada`) —
  * `Enter` submete (quando `onSubmit` é dado), `Esc` fecha, foco vai pro
  * primeiro campo ao abrir e volta pro elemento que abriu o modal ao fechar.
  */

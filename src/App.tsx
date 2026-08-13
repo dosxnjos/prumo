@@ -4,7 +4,8 @@ import { ProvedorEspaco } from './app/ContextoEspaco'
 import { CurvaSaldo } from './app/CurvaSaldo'
 import { FormularioRegra } from './app/FormularioRegra'
 import { Onboarding } from './app/Onboarding'
-import { PainelEspacos } from './app/PainelEspacos'
+import { TrocarEspaco } from './app/TrocarEspaco'
+import { GerenciarEspaco } from './app/GerenciarEspaco'
 import { ProgressoPeDeMeia } from './app/ProgressoPeDeMeia'
 import { TelaCurvaDetalhada } from './app/TelaCurvaDetalhada'
 import { ProvedorToast } from './app/Toast'
@@ -14,6 +15,7 @@ import type { Mes, Regra } from './dominio/tipos'
 
 type ModalAberto =
   | { tipo: 'espacos' }
+  | { tipo: 'gerenciar-espaco' }
   | { tipo: 'regra'; regra: Regra | null; mesOrigem?: Mes }
   | { tipo: 'config' }
   | { tipo: 'curva' }
@@ -50,7 +52,12 @@ function Conteudo() {
         </div>
       </div>
 
-      {modal?.tipo === 'espacos' && <PainelEspacos onFechar={() => setModal(null)} />}
+      {modal?.tipo === 'espacos' && (
+        <TrocarEspaco onFechar={() => setModal(null)} onGerenciar={() => setModal({ tipo: 'gerenciar-espaco' })} />
+      )}
+      {modal?.tipo === 'gerenciar-espaco' && (
+        <GerenciarEspaco onVoltar={() => setModal({ tipo: 'espacos' })} />
+      )}
       {modal?.tipo === 'regra' && (
         <FormularioRegra regra={modal.regra} mesOrigem={modal.mesOrigem} onFechar={() => setModal(null)} />
       )}

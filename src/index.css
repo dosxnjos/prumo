@@ -303,10 +303,35 @@ select:disabled {
   margin-bottom: 12px;
 }
 
+.secao-config {
+  border: none;
+  border-top: 1px solid var(--linha);
+  padding: var(--esp-4) 0 0;
+  margin: 0 0 var(--esp-4);
+}
+
+.secao-config legend {
+  font-weight: 600;
+  padding: 0;
+  margin-bottom: var(--esp-2);
+}
+
+.microcopy {
+  font-size: var(--tipo-caption);
+  opacity: 0.75;
+  margin: -4px 0 var(--esp-3);
+}
+
 .preview-derivado {
   font-size: 0.85em;
   opacity: 0.8;
   margin: 4px 0 16px;
+}
+
+.aviso-backup {
+  font-size: var(--tipo-caption);
+  color: var(--saida);
+  margin: 0 0 var(--esp-2);
 }
 
 .cabecalho-mes {

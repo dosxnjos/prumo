@@ -406,20 +406,37 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 
 ### Fase 4 — config, espaços e o backup promovido
 
-26. [ ] **U7**: separar o painel — "Trocar de espaço" (lista + novo) e
+26. [x] **U7**: separar o painel — "Trocar de espaço" (lista + novo) e
     "Gerenciar espaço" (renomear, membros, apagar) como telas distintas.
     — **prova:** Playwright: trocar de espaço em ≤2 toques; gestão a 1 nível.
-27. [ ] **U4**: config em seções (Rendimento / Dívida / Meta / Estado atual)
+    ✅ Feito 13/08/2026: `PainelEspacos.tsx` (4 responsabilidades num modal
+    só) virou `TrocarEspaco.tsx` (nível 0 — lista + criar) e
+    `GerenciarEspaco.tsx` (nível 1 — renomear/membros/backup/apagar, só do
+    espaço ativo), navegação por callback (`onGerenciar`/`onVoltar`).
+    Confirmado ao vivo: trocar de espaço em 1 toque (abre já com foco no
+    primeiro item — U8); "gerenciar" é o 2º toque a partir do mesmo painel;
+    "‹ espaços" volta 1 nível, não fecha tudo.
+27. [x] **U4**: config em seções (Rendimento / Dívida / Meta / Estado atual)
     com microcopy pt-BR ("não sabe o % do banco? 100% é o comum") e o aviso
     de estado manual mantido.
     — **prova:** screenshot; nenhum campo sem rótulo humano.
-28. [ ] **U3**: backup promovido — entrada própria no menu (não enterrada),
+    ✅ Feito 13/08/2026: 4 `<fieldset><legend>`, cada um com sua microcopy
+    (rendimento, dívida, meta) e o aviso ⚠️ do "Estado atual" preservado.
+    Confirmado ao vivo, sem overflow em 390px.
+28. [x] **U3**: backup promovido — entrada própria no menu (não enterrada),
     mostrando "último backup: <data relativa>"; aviso não-intrusivo na tela
     principal quando >30 dias (ou nunca). Grava `ultimoBackupEm` como campo
     **opcional** novo em `ConfigFinanceira` (leitura com `??` — schema v1
     intocado, ver restrição nº1).
     — **prova:** vitest: exportar grava o carimbo; import de backup v1 SEM o
     campo funciona; aviso aparece com carimbo velho e some após exportar.
+    ✅ Feito 13/08/2026: backup saiu de dentro do `ConfigFinanceiraTela`
+    (que era "enterrado" — ficava depois de 4 seções + salvar) e virou
+    seção própria em `GerenciarEspaco` (2 testes: sem o campo mostra "nunca"
+    + aviso; exportar grava o carimbo e o aviso some). `rotuloRelativo`/
+    `diasDesde` são funções puras novas em `dominio/tempoRelativo.ts` (7
+    testes). Confirmado ao vivo: "último backup: nunca" → clicar exportar →
+    "último backup: hoje", aviso sumiu, sem erro de console.
 
 ### Fase 5 — robustez, testes e o fecho
 

@@ -21,6 +21,12 @@ export interface ConfigFinanceira {
   /** Estado atual, digitado manualmente — Fase 4 (fechamento) ainda não existe. */
   peDeMeiaAtualCentavos: number
   reservaAtualCentavos: number
+  /**
+   * U3: carimbo do último export de backup, ISO. Opcional — schema v1
+   * intocado (restrição nº1 do roadmap); backup antigo sem o campo lê
+   * `undefined` e o rótulo vira "nunca" (`rotuloRelativo`).
+   */
+  ultimoBackupEm?: string
 }
 
 export function configFinanceiraPadrao(): ConfigFinanceira {
