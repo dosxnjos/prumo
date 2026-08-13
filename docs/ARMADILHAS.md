@@ -1,5 +1,39 @@
 # Armadilhas — Prumo
 
+## Chave `{` não fechada no CSS quebra o parser em silêncio — `npm run build` não denuncia
+
+**Sintoma (Fase 3, passo 22-23):** depois de várias edições em `index.css`,
+uma tabela dentro de um modal (`TelaCurvaDetalhada`) passou a estourar a
+página inteira (`document.documentElement.scrollWidth` de 940px num viewport
+de 375px), mesmo com `.tabela-curva-wrapper { overflow-x: auto }` presente
+no arquivo-fonte. `npm run build` e `npm test` continuavam **verdes** — o
+bug só apareceu ao vivo com Playwright.
+
+**Causa:** uma chave `{` de uma edição anterior (fusão do bloco
+`.saldo.negativo` na Fase 3) ficou sem fechar — `content.count('{')` dava
+142 vs `content.count('}')` 141. O parser CSS do Vite/lightningcss não
+lança erro visível nisso: ele silenciosamente compila um número BEM menor
+de regras (`document.styleSheets[0].cssRules.length` caiu de ~250 esperado
+para 47), descartando parte do arquivo sem avisar em lugar nenhum — nem
+console do browser, nem saída do `vite build`.
+
+**Diagnóstico:** `document.styleSheets[0].cssRules.length` no browser real
+(via Playwright `evaluate`) foi o primeiro sinal de que o CSS carregado
+estava incompleto — muito menor que o número de regras no arquivo-fonte.
+De lá, contar chaves abertas vs. fechadas no arquivo (`content.count('{')`
+vs `content.count('}')`) achou a causa em segundos.
+
+**Correção:** sempre que um `Edit` mexer no meio de um arquivo `.css`
+grande, checar o balanceamento de chaves do arquivo inteiro depois — não só
+que o trecho editado "parece certo". Sinal de alerta: `npm run build` verde
+não garante CSS válido, porque o bundler tolera e trunca silenciosamente.
+
+**Regra geral:** depois de qualquer edição não-trivial em CSS, uma forma
+barata de conferir integridade é `document.styleSheets[0].cssRules.length`
+no DevTools/Playwright — se o número cair abruptamente em relação ao
+esperado pelo tamanho do arquivo, o arquivo está sendo truncado, mesmo com
+build e testes verdes.
+
 ## `min`/`required` num `<input>` dentro de `<form>` engole o `submit` em silêncio
 
 **Sintoma (Fase 2, U8, `FormularioRegra.test.tsx`):** depois de trocar o

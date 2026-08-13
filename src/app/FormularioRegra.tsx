@@ -251,6 +251,17 @@ export function FormularioRegra({ regra, onFechar, mesOrigem }: Props) {
           />
         </label>
         {campoComErro === 'valor' && <p className="erro-campo">{erro}</p>}
+        {valorTexto && (
+          <p className="preview-valor">
+            {(() => {
+              try {
+                return formatarBRL(paraCentavos(valorTexto))
+              } catch {
+                return null
+              }
+            })()}
+          </p>
+        )}
 
         <fieldset>
           <legend>Quando acontece</legend>
@@ -380,18 +391,6 @@ export function FormularioRegra({ regra, onFechar, mesOrigem }: Props) {
             salvar
           </button>
         </div>
-
-        {valorTexto && (
-          <p className="preview-valor">
-            {(() => {
-              try {
-                return formatarBRL(paraCentavos(valorTexto))
-              } catch {
-                return null
-              }
-            })()}
-          </p>
-        )}
     </Modal>
   )
 }

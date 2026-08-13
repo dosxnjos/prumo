@@ -1,7 +1,48 @@
+/*
+ * Sistema de tokens — Fase 3 (redesign visual). Direção: sobriedade que
+ * inspira confiança financeira + a metáfora do fio de prumo (vertical,
+ * alinhamento, precisão). Paleta neutra quente com um único acento sóbrio
+ * (petróleo dessaturado); verde/vermelho dessaturados pra entrada/saída.
+ * Contraste AA verificado (fórmula WCAG) pra todo par texto/fundo — ver
+ * docs/ARMADILHAS.md se algum tom precisar mudar.
+ */
 :root {
-  --text: #6b6375;
-  --text-h: #08060d;
-  --bg: #fff;
+  /* cor */
+  --bg: #faf9f6;
+  --superficie: #ffffff;
+  --text: #57534e;
+  --text-h: #1c1917;
+  --linha: #e7e5e0;
+  --acento: #3d5a66;
+  --acento-suave: color-mix(in srgb, var(--acento) 10%, transparent);
+  --entrada: #3f6b52;
+  --saida: #a24b46;
+
+  /* espaçamento — 4/8/12/16/24/32 */
+  --esp-1: 4px;
+  --esp-2: 8px;
+  --esp-3: 12px;
+  --esp-4: 16px;
+  --esp-5: 24px;
+  --esp-6: 32px;
+
+  /* raios */
+  --raio-sm: 6px;
+  --raio-md: 8px;
+  --raio-lg: 16px;
+
+  /* escala tipográfica */
+  --tipo-caption: 0.85em;
+  --tipo-base: 1em;
+  --tipo-destaque: 1.15em;
+  --tipo-titulo: 1.4em;
+  --tipo-hero: 1.8em;
+
+  /* sombra */
+  --sombra-1: 0 4px 24px rgba(28, 25, 23, 0.06);
+  --sombra-2: 0 8px 32px rgba(28, 25, 23, 0.18);
+
+  --transicao: 120ms ease;
 
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
 
@@ -17,9 +58,14 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --text: #9ca3af;
-    --text-h: #f3f4f6;
-    --bg: #16171d;
+    --bg: #16171a;
+    --superficie: #1f2023;
+    --text: #a8a29e;
+    --text-h: #f5f4f2;
+    --linha: #33343a;
+    --acento: #7ba3b5;
+    --entrada: #7fb99a;
+    --saida: #d18a83;
   }
 }
 
@@ -37,31 +83,44 @@ h1 {
   box-sizing: border-box;
 }
 
-:root {
-  --linha: #e5e4e7;
-  --entrada: #2e7d32;
-  --saida: #c62828;
-  --dono: #aa3bff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --linha: #2e303a;
-    --entrada: #66bb6a;
-    --saida: #ef5350;
-    --dono: #c084fc;
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
 
+.valor,
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* botões — primário (ação principal, "salvar"), secundário (default),
+   perigo (apagar/remover), fantasma (sem borda, ex. fechar/ícone) */
 button {
   font: inherit;
   font-weight: 500;
-  color: inherit;
-  background: transparent;
+  color: var(--text-h);
+  background: var(--superficie);
   border: 1px solid var(--linha);
-  border-radius: 8px;
+  border-radius: var(--raio-md);
   padding: 0.5em 0.9em;
   cursor: pointer;
+  transition: border-color var(--transicao), background var(--transicao), color var(--transicao), opacity var(--transicao);
+  min-height: 44px;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--acento);
+}
+
+button:active:not(:disabled) {
+  background: var(--acento-suave);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 2px;
 }
 
 button:disabled {
@@ -69,14 +128,65 @@ button:disabled {
   cursor: not-allowed;
 }
 
+button.salvar,
+button.confirmar {
+  background: var(--acento);
+  border-color: var(--acento);
+  color: white;
+}
+
+button.salvar:hover:not(:disabled),
+button.confirmar:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--acento) 85%, black);
+}
+
+button.apagar,
+button.remover {
+  border-color: var(--saida);
+  color: var(--saida);
+}
+
+button.apagar:hover:not(:disabled),
+button.remover:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--saida) 10%, transparent);
+}
+
+button.fantasma,
+.botao-config,
+.rotulo-mes {
+  border: none;
+  background: transparent;
+  padding: 0.4em;
+}
+
 input,
 select {
   font: inherit;
-  color: inherit;
-  background: var(--bg);
+  color: var(--text-h);
+  background: var(--superficie);
   border: 1px solid var(--linha);
-  border-radius: 6px;
+  border-radius: var(--raio-sm);
   padding: 0.4em 0.6em;
+  transition: border-color var(--transicao);
+  min-height: 44px;
+}
+
+input:hover:not(:disabled),
+select:hover:not(:disabled) {
+  border-color: color-mix(in srgb, var(--acento) 50%, var(--linha));
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--acento);
+  outline-offset: 1px;
+  border-color: var(--acento);
+}
+
+input:disabled,
+select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .app-shell {
@@ -87,17 +197,17 @@ select {
 
 @media (min-width: 768px) {
   body {
-    background: color-mix(in srgb, var(--bg) 96%, var(--text-h) 4%);
+    background: var(--bg);
   }
 
   .app-shell {
     max-width: 560px;
     margin: 32px auto 64px;
     padding: 0 32px 32px;
-    background: var(--bg);
+    background: var(--superficie);
     border: 1px solid var(--linha);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-1);
   }
 
   .topo-app {
@@ -117,8 +227,8 @@ select {
     width: 420px;
     max-width: 90vw;
     max-height: 80vh;
-    border-radius: 16px;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-2);
   }
 }
 
@@ -152,7 +262,7 @@ select {
   border-bottom: 1px solid var(--linha);
   position: sticky;
   top: 0;
-  background: var(--bg);
+  background: var(--superficie);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -178,8 +288,8 @@ select {
 }
 
 .config-financeira {
-  background: var(--bg);
-  border-radius: 16px 16px 0 0;
+  background: var(--superficie);
+  border-radius: var(--raio-lg) var(--raio-lg) 0 0;
   padding: 20px;
   width: 100%;
   max-height: 85vh;
@@ -238,12 +348,47 @@ select {
 }
 
 .resumo-mes {
+  margin-bottom: var(--esp-4);
+}
+
+/* saldo do mês é o herói (passo 20): número grande, tabular, com apoio
+   discreto de entradas/saídas — a informação nº1 tem o peso visual nº1 */
+.saldo-hero {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  font-size: 0.9em;
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: var(--esp-2);
+}
+
+.rotulo-saldo {
+  font-size: var(--tipo-caption);
+  opacity: 0.7;
+}
+
+.saldo-hero .valor {
+  font-size: var(--tipo-hero);
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+.saldo-hero.positivo .valor {
+  color: var(--entrada);
+}
+
+.saldo-hero.negativo .valor {
+  color: var(--saida);
+}
+
+.resumo-apoio {
+  display: flex;
+  gap: var(--esp-4);
+  font-size: var(--tipo-caption);
+  opacity: 0.85;
   flex-wrap: wrap;
+}
+
+.resumo-apoio .valor {
+  font-weight: 500;
 }
 
 .saldo.positivo {
@@ -273,12 +418,38 @@ select {
   margin: 0 0 12px;
 }
 
-.grupo-membro h2 {
-  font-size: 0.95em;
-  font-weight: 500;
+/* o "fio de prumo": a cor do membro como linha vertical contínua ao longo
+   de todo o grupo — assinatura visual do redesign (passo 21) */
+.grupo-membro {
   border-left: 3px solid;
-  padding-left: 8px;
-  margin: 16px 0 4px;
+  padding-left: var(--esp-3);
+  margin: var(--esp-4) 0;
+}
+
+.cabecalho-grupo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: var(--esp-1);
+}
+
+.grupo-membro h2 {
+  font-size: var(--tipo-caption);
+  font-weight: 500;
+  margin: 0;
+}
+
+.total-grupo {
+  font-size: var(--tipo-caption);
+  font-weight: 500;
+}
+
+.total-grupo.entrada {
+  color: var(--entrada);
+}
+
+.total-grupo.saida {
+  color: var(--saida);
 }
 
 .grupo-membro ul {
@@ -329,7 +500,7 @@ select {
 }
 
 li.ajustado {
-  background: color-mix(in srgb, var(--dono) 8%, transparent);
+  background: color-mix(in srgb, var(--acento) 8%, transparent);
 }
 
 .overlay {
@@ -341,10 +512,16 @@ li.ajustado {
   z-index: 10;
 }
 
+/* qualquer painel dentro do overlay é filho flex — sem min-width:0 nenhum
+   deles encolhe abaixo do conteúdo intrínseco mais largo (ex. tabela). */
+.overlay > * {
+  min-width: 0;
+}
+
 .formulario-regra,
 .painel-espacos {
-  background: var(--bg);
-  border-radius: 16px 16px 0 0;
+  background: var(--superficie);
+  border-radius: var(--raio-lg) var(--raio-lg) 0 0;
   padding: 20px;
   width: 100%;
   max-height: 85vh;
@@ -360,9 +537,15 @@ li.ajustado {
 
 .opcao-recorrencia {
   flex-direction: row !important;
+  flex-wrap: wrap;
   align-items: center;
   gap: 6px !important;
-  font-size: 0.9em;
+  font-size: var(--tipo-caption);
+  padding: var(--esp-1) 0;
+}
+
+.opcao-recorrencia input[type='month'] {
+  min-height: 36px;
 }
 
 .ajuste-mes-origem {
@@ -394,31 +577,94 @@ li.ajustado {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: var(--esp-2);
+}
+
+/* segmented control (I3): um grupo, nunca um botão órfão numa linha própria */
+.opcoes-horizonte {
+  display: flex;
+  gap: 4px;
+  padding: 3px;
+  background: var(--linha);
+  border-radius: var(--raio-md);
+  flex-shrink: 0;
+}
+
+.opcoes-horizonte button {
+  border: none;
+  min-height: 38px;
+  padding: 0.3em 0.9em;
+  font-size: var(--tipo-caption);
+  background: transparent;
 }
 
 .opcoes-horizonte button.selecionado {
-  border-color: var(--dono);
-  color: var(--dono);
+  background: var(--superficie);
+  color: var(--acento);
+  font-weight: 600;
 }
 
 .grafico-curva {
   width: 100%;
   height: 120px;
   margin: 12px 0;
+  cursor: crosshair;
+  touch-action: none;
 }
 
 .linha-curva {
-  stroke: var(--dono);
+  stroke: var(--entrada);
   stroke-width: 2;
+  stroke-linecap: round;
 }
 
+.linha-curva-negativa {
+  stroke: var(--saida);
+}
+
+.area-curva {
+  stroke: none;
+}
+
+.area-positiva {
+  fill: color-mix(in srgb, var(--entrada) 14%, transparent);
+}
+
+.area-negativa {
+  fill: color-mix(in srgb, var(--saida) 14%, transparent);
+}
+
+/* zero destacado (I3): mais forte que a grade, é a referência de leitura */
 .linha-zero {
-  stroke: var(--linha);
+  stroke: var(--text);
   stroke-width: 1;
+  opacity: 0.35;
 }
 
 .ponto-hoje {
-  fill: var(--dono);
+  fill: var(--acento);
+}
+
+.linha-guia {
+  stroke: var(--text);
+  stroke-width: 1;
+  stroke-dasharray: 2 3;
+  opacity: 0.5;
+}
+
+.ponto-ativo.positivo {
+  fill: var(--entrada);
+}
+
+.ponto-ativo.negativo {
+  fill: var(--saida);
+}
+
+.tooltip-curva {
+  font-size: var(--tipo-caption);
+  margin: 4px 0 8px;
+  min-height: 1.4em;
 }
 
 .linha-grade {
@@ -430,7 +676,7 @@ li.ajustado {
 .rotulo-eixo-y,
 .rotulo-eixo-x {
   fill: var(--text);
-  font-size: 11px;
+  font-size: 12px;
   opacity: 0.75;
 }
 
@@ -445,18 +691,21 @@ li.ajustado {
 }
 
 .ponto-mes {
-  fill: var(--dono);
+  fill: var(--acento);
   opacity: 0.6;
 }
 
 .curva-detalhada {
-  background: var(--bg);
-  border-radius: 16px;
+  background: var(--superficie);
+  border-radius: var(--raio-lg);
   padding: 20px;
   width: 100%;
   max-width: 960px;
   max-height: 90vh;
   overflow-y: auto;
+  /* filho de .overlay (flex): sem isso, o item nunca encolhe abaixo do
+     conteúdo intrínseco (a tabela larga) e estoura a página inteira. */
+  min-width: 0;
 }
 
 .curva-detalhada-cabecalho {
@@ -500,36 +749,53 @@ li.ajustado {
 }
 
 .tabela-curva tr.mes-atual {
-  background: color-mix(in srgb, var(--dono) 8%, transparent);
+  background: color-mix(in srgb, var(--acento) 8%, transparent);
   font-weight: 500;
 }
 
 .onboarding {
   max-width: 480px;
   margin: 0 auto;
-  padding: 24px 16px;
+  padding: var(--esp-5) var(--esp-4);
+}
+
+.onboarding h1 {
+  font-size: var(--tipo-hero);
+  display: flex;
+  align-items: center;
+  gap: var(--esp-2);
+}
+
+/* o fio de prumo como assinatura, também no primeiro contato com o app */
+.onboarding h1::before {
+  content: '';
+  display: inline-block;
+  width: 3px;
+  height: 1em;
+  background: var(--acento);
+  border-radius: 2px;
 }
 
 @media (min-width: 768px) {
   .onboarding {
     max-width: 560px;
     margin: 48px auto;
-    padding: 32px 40px;
-    background: var(--bg);
+    padding: var(--esp-6) 40px;
+    background: var(--superficie);
     border: 1px solid var(--linha);
-    border-radius: 16px;
-    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
+    border-radius: var(--raio-lg);
+    box-shadow: var(--sombra-1);
   }
 }
 
 .onboarding section {
-  margin-bottom: 20px;
+  margin-bottom: var(--esp-5);
 }
 
 .onboarding label {
   display: block;
   font-weight: 500;
-  margin-bottom: 6px;
+  margin-bottom: var(--esp-2);
 }
 
 .linha-membro {
@@ -571,7 +837,7 @@ li.ajustado {
 
 .confirmar {
   width: 100%;
-  background: var(--dono);
+  background: var(--acento);
   color: white;
   border: none;
   font-weight: 500;
@@ -583,8 +849,8 @@ li.ajustado {
 }
 
 .lista-espacos button.selecionado {
-  border-color: var(--dono);
-  color: var(--dono);
+  border-color: var(--acento);
+  color: var(--acento);
 }
 
 .lista-membros {
@@ -612,12 +878,6 @@ li.ajustado {
   align-items: center;
   flex-wrap: wrap;
   margin: 8px 0;
-}
-
-button.apagar,
-button.remover {
-  border-color: var(--saida);
-  color: var(--saida);
 }
 
 .toasts {

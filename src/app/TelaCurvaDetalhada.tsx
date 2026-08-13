@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { formatarBRL } from '../dominio/dinheiro'
 import { rotulo } from '../dominio/mes'
 import { Modal } from './Modal'
@@ -25,6 +25,8 @@ interface Props {
 export function TelaCurvaDetalhada({ onFechar }: Props) {
   const [horizonte, setHorizonte] = useState<(typeof OPCOES_HORIZONTE)[number]>(12)
   const serie = useSerieProjetada(horizonte)
+  const [indiceAtivo, setIndiceAtivo] = useState<number | null>(null)
+  const idClip = useId()
 
   if (serie.length === 0) return null
 
@@ -47,11 +49,20 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
   const y = (valor: number) => PAD_TOPO + ALTURA_PLOT - ((valor - min) / amplitude) * ALTURA_PLOT
 
   const pontos = serie.map((p, i) => `${x(i)},${y(p.patrimonio)}`).join(' ')
+  const yZero = y(0)
+  const areaPath = `M${x(0)},${yZero} L${pontos.replace(/ /g, ' L')} L${x(serie.length - 1)},${yZero} Z`
 
   const TICKS_Y = 4
   const ticksY = Array.from({ length: TICKS_Y + 1 }, (_, i) => min + (amplitude * i) / TICKS_Y)
 
   const passoRotulo = passoRotuloX(serie.length)
+  const ativo = indiceAtivo !== null ? serie[indiceAtivo] : null
+
+  function aoMoverPonteiro(clientX: number, retangulo: DOMRect) {
+    const relativo = ((clientX - retangulo.left) / retangulo.width) * LARGURA
+    const indice = Math.round((relativo - PAD_ESQ) / passoX)
+    setIndiceAtivo(Math.max(0, Math.min(serie.length - 1, indice)))
+  }
 
   return (
     <Modal onFechar={onFechar} className="curva-detalhada" titulo="Curva de saldo — mês a mês">
@@ -78,7 +89,19 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
           className="grafico-curva grafico-curva-grande"
           role="img"
           aria-label="curva de saldo projetado, mês a mês"
+          onPointerMove={(e) => aoMoverPonteiro(e.clientX, e.currentTarget.getBoundingClientRect())}
+          onPointerLeave={() => setIndiceAtivo(null)}
+          onClick={(e) => aoMoverPonteiro(e.clientX, e.currentTarget.getBoundingClientRect())}
         >
+          <defs>
+            <clipPath id={`${idClip}-pos`}>
+              <rect x="0" y="0" width={LARGURA} height={yZero} />
+            </clipPath>
+            <clipPath id={`${idClip}-neg`}>
+              <rect x="0" y={yZero} width={LARGURA} height={ALTURA - yZero} />
+            </clipPath>
+          </defs>
+
           {ticksY.map((valor) => (
             <g key={valor}>
               <line x1={PAD_ESQ} y1={y(valor)} x2={LARGURA - PAD_DIR} y2={y(valor)} className="linha-grade" />
@@ -88,7 +111,12 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
             </g>
           ))}
 
-          <polyline points={pontos} className="linha-curva" fill="none" />
+          <path d={areaPath} className="area-curva area-positiva" clipPath={`url(#${idClip}-pos)`} />
+          <path d={areaPath} className="area-curva area-negativa" clipPath={`url(#${idClip}-neg)`} />
+
+          <line x1={PAD_ESQ} y1={yZero} x2={LARGURA - PAD_DIR} y2={yZero} className="linha-zero" />
+          <polyline points={pontos} className="linha-curva" fill="none" clipPath={`url(#${idClip}-pos)`} />
+          <polyline points={pontos} className="linha-curva linha-curva-negativa" fill="none" clipPath={`url(#${idClip}-neg)`} />
 
           {serie.map((p, i) => (
             <circle
@@ -100,14 +128,41 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
             />
           ))}
 
-          {serie.map((p, i) =>
-            i % passoRotulo === 0 || i === serie.length - 1 ? (
-              <text key={p.mes} x={x(i)} y={ALTURA - 6} className="rotulo-eixo-x" textAnchor="middle">
+          {ativo && indiceAtivo !== null && (
+            <>
+              <line x1={x(indiceAtivo)} y1={PAD_TOPO} x2={x(indiceAtivo)} y2={PAD_TOPO + ALTURA_PLOT} className="linha-guia" />
+              <circle
+                cx={x(indiceAtivo)}
+                cy={y(ativo.patrimonio)}
+                r={5}
+                className={ativo.patrimonio >= 0 ? 'ponto-ativo positivo' : 'ponto-ativo negativo'}
+              />
+            </>
+          )}
+
+          {serie.map((p, i) => {
+            if (!(i % passoRotulo === 0 || i === serie.length - 1)) return null
+            const ehUltimo = i === serie.length - 1
+            const ehPrimeiro = i === 0
+            return (
+              <text
+                key={p.mes}
+                x={x(i)}
+                y={ALTURA - 6}
+                className="rotulo-eixo-x"
+                textAnchor={ehUltimo ? 'end' : ehPrimeiro ? 'start' : 'middle'}
+              >
                 {rotulo(p.mes)}
               </text>
-            ) : null,
-          )}
+            )
+          })}
         </svg>
+
+        {ativo && (
+          <p className="tooltip-curva">
+            <strong>{rotulo(ativo.mes)}</strong> — <span className="valor">{formatarBRL(ativo.patrimonio)}</span>
+          </p>
+        )}
 
         <p className="legenda-curva">
           ⚠️ tudo aqui é <strong>estimativa</strong> — o fechamento mensal (Fase 4)

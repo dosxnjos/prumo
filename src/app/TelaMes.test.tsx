@@ -85,7 +85,7 @@ describe('TelaMes + FormularioRegra — desligar/religar item (L2)', () => {
     await esperar()
 
     expect(container.textContent).toContain('Aluguel')
-    expect(container.textContent).toContain('Saídas: R$ 100,00')
+    expect(container.textContent).toContain('Saídas R$ 100,00')
     expect(container.querySelector('.secao-desligados')).toBeNull()
 
     // abre o form clicando no nome do item
@@ -97,7 +97,7 @@ describe('TelaMes + FormularioRegra — desligar/religar item (L2)', () => {
     act(() => botaoDesligar.dispatchEvent(new MouseEvent('click', { bubbles: true })))
     await esperar()
 
-    expect(container.textContent).toContain('Saídas: R$ 0,00')
+    expect(container.textContent).toContain('Saídas R$ 0,00')
     expect(container.querySelector('.secao-desligados')).not.toBeNull()
     expect(container.textContent).toContain('Desligados (1)')
 
@@ -105,7 +105,7 @@ describe('TelaMes + FormularioRegra — desligar/religar item (L2)', () => {
     act(() => botaoReligar.dispatchEvent(new MouseEvent('click', { bubbles: true })))
     await esperar()
 
-    expect(container.textContent).toContain('Saídas: R$ 100,00')
+    expect(container.textContent).toContain('Saídas R$ 100,00')
     expect(container.querySelector('.secao-desligados')).toBeNull()
 
     root.unmount()

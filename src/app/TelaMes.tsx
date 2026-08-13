@@ -141,11 +141,14 @@ export function TelaMes({ onEditarRegra }: Props) {
       </header>
 
       <div className="resumo-mes">
-        <span className="entradas">Entradas: {formatarBRL(totalEntradas)}</span>
-        <span className="saidas">Saídas: {formatarBRL(totalSaidas)}</span>
-        <span className={saldo >= 0 ? 'saldo positivo' : 'saldo negativo'}>
-          Saldo: {formatarBRL(saldo)}
-        </span>
+        <div className={`saldo-hero ${saldo >= 0 ? 'positivo' : 'negativo'}`}>
+          <span className="rotulo-saldo">Saldo do mês</span>
+          <strong className="valor">{formatarBRL(saldo)}</strong>
+        </div>
+        <div className="resumo-apoio">
+          <span className="entradas">Entradas <span className="valor">{formatarBRL(totalEntradas)}</span></span>
+          <span className="saidas">Saídas <span className="valor">{formatarBRL(totalSaidas)}</span></span>
+        </div>
       </div>
 
       {ehMesPassado && (
@@ -162,9 +165,19 @@ export function TelaMes({ onEditarRegra }: Props) {
         + novo item
       </button>
 
-      {[...grupos.entries()].map(([membroId, itens]) => (
-        <section key={membroId} className="grupo-membro">
-          <h2 style={{ borderColor: corMembro(membroId) }}>{nomeMembro(membroId)}</h2>
+      {[...grupos.entries()].map(([membroId, itens]) => {
+        const totalGrupo = itens.reduce(
+          (soma, oc) => soma + (oc.regra.fluxo === 'entrada' ? oc.valorCentavos : -oc.valorCentavos),
+          0,
+        )
+        return (
+        <section key={membroId} className="grupo-membro" style={{ borderColor: corMembro(membroId) }}>
+          <div className="cabecalho-grupo">
+            <h2>{nomeMembro(membroId)}</h2>
+            <span className={`total-grupo valor ${totalGrupo >= 0 ? 'entrada' : 'saida'}`}>
+              {formatarBRL(totalGrupo)}
+            </span>
+          </div>
           <ul>
             {itens.map((oc) => (
               <li key={oc.regra.id} className={oc.regra.excecoes[mes] ? 'ajustado' : ''}>
@@ -187,7 +200,8 @@ export function TelaMes({ onEditarRegra }: Props) {
             ))}
           </ul>
         </section>
-      ))}
+        )
+      })}
 
       {ocorrencias.length === 0 && regras.length === 0 && (
         <div className="vazio-espaco">

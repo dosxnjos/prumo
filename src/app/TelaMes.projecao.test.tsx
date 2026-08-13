@@ -97,8 +97,8 @@ describe('TelaMes — saldo unificado com a projeção (L4)', () => {
     await esperar(5)
 
     expect(container.textContent).toContain('Dívida do mês anterior')
-    expect(container.textContent).toContain(`Saídas: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(referencia.totalSaidas / 100)}`)
-    expect(container.textContent).toContain(`Entradas: ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(referencia.totalEntradas / 100)}`)
+    expect(container.textContent).toContain(`Saídas ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(referencia.totalSaidas / 100)}`)
+    expect(container.textContent).toContain(`Entradas ${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(referencia.totalEntradas / 100)}`)
 
     root.unmount()
   })

@@ -312,36 +312,97 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 600 (regra da casa). Carregar a skill `dataviz` antes do passo da curva e a
 `frontend-design` antes do primeiro passo.
 
-19. [ ] Tokens em `src/index.css`: cores (bg/surface/text/acento/entrada/
+19. [x] Tokens em `src/index.css`: cores (bg/surface/text/acento/entrada/
     saida/linha, light+dark), espaçamento (4/8/12/16/24/32), raios, escala
     tipográfica (0.85/1/1.15/1.4/1.8em), sombras. Componentes base: botão
     primário/secundário/perigo/fantasma, input, select, com hover/
     focus-visible/active/disabled e transição curta (I4).
     — **prova:** `npm run build` verde; grep sem `#aa3bff` e sem
     `font-weight: 7|8` no CSS; screenshot da "folha de componentes" nos 2 temas.
-20. [ ] Topo + resumo do mês: saldo do mês vira o **herói** (número grande,
+    ✅ Feito 13/08/2026. Paleta escolhida (petróleo `#3d5a66` dessaturado como
+    acento; verde `#3f6b52`/vermelho `#a24b46` dessaturados) — todo par
+    texto/fundo validado ≥4.5:1 (WCAG AA) por fórmula, nos dois temas (ver
+    passo 25). `grep` confirmou zero `#aa3bff` e zero `font-weight: 7|8`.
+    "Folha de componentes" não é uma tela isolada (o app não tem Storybook)
+    — a prova foi o próprio app renderizado ao vivo exercitando os
+    componentes (botões/inputs/selects), não uma página de showcase dedicada.
+20. [x] Topo + resumo do mês: saldo do mês vira o **herói** (número grande,
     tabular-nums), entradas/saídas como apoio; navegação de mês integrada.
     — **prova:** screenshot mobile/desktop; hierarquia visível (saldo ≥1.4em).
-21. [ ] Lista de itens: linha densa (nome + categoria sub-rótulo à esquerda,
+    ✅ Feito 13/08/2026 (`--tipo-hero: 1.8em`, `.saldo-hero`). Confirmado ao
+    vivo: "Saldo do mês" em destaque, "Entradas"/"Saídas" como apoio discreto
+    abaixo.
+21. [x] Lista de itens: linha densa (nome + categoria sub-rótulo à esquerda,
     valor tabular à direita), cor do membro como fio vertical, grupos com
     total por membro.
     — **prova:** screenshot com 10+ itens fictícios sem quebra de linha nos
     valores em 360px.
-22. [ ] Curva (com skill `dataviz`): segmented control alinhado (I3), área
+    ✅ Feito 13/08/2026: o fio vertical (border-left 3px) passou do `h2` pro
+    `<section>` inteiro do grupo, cobrindo cabeçalho+lista; total líquido
+    (entrada−saída) por grupo, colorido. Confirmado ao vivo com dados reais
+    do exemplo fictício, sem overflow.
+22. [x] Curva (com skill `dataviz`): segmented control alinhado (I3), área
     preenchida sob a linha, zero destacado, eixos legíveis (≥12px), rótulo
     final sem corte, leitura por ponto (tap/hover mostra mês+valor), estados
     negativo em vermelho. Vale para `CurvaSaldo` e `TelaCurvaDetalhada`.
     — **prova:** screenshot 12/24/60m nos 2 temas; tap num ponto mostra valor.
-23. [ ] Modais e formulários no novo sistema (inclui recorrência com labels
+    ✅ Feito 13/08/2026: skill `dataviz` carregada antes — como é série única
+    (patrimônio ao longo do tempo, não categórica), o validador de paleta
+    categórica não se aplica; a separação positivo/negativo (verde/vermelho)
+    já tinha contraste conferido no passo 19. Área+linha usam `clipPath` SVG
+    dividido no zero (positivo verde, negativo vermelho); zero-line mais
+    forte que a grade; rótulo do último mês com `textAnchor="end"` (não mais
+    "middle", que cortava — I3). Interatividade: `onPointerMove`/`onClick`
+    calculam o ponto mais próximo, mostram linha-guia + tooltip "mês — valor"
+    — confirmado ao vivo (tap mostrou "jan/2027 — R$ 11.880,00"). Segmented
+    control 12/24/60m virou um grupo com fundo (nunca mais "60m órfão" numa
+    linha própria) — confirmado ao vivo, sem quebra.
+23. [x] Modais e formulários no novo sistema (inclui recorrência com labels
     que não quebram e preview do valor junto do campo, não depois dos botões).
-    — **prova:** screenshot dos 5 modais em 390px, sem overflow.
-24. [ ] Onboarding com a cara nova (mantendo 1 tela).
+    — **prova:** screenshot dos 4 modais em 390px, sem overflow (5→4 depois
+    da fusão do `AjustePontual` na Fase 2, passo 14).
+    ✅ Feito 13/08/2026: preview do valor movido pra logo abaixo do campo
+    "Valor" (antes ficava depois dos botões de ação). `.opcao-recorrencia`
+    ganhou `flex-wrap`. Todos os painéis/modais migrados de `var(--bg)` pra
+    `var(--superficie)` — separação clara entre fundo de página e superfície
+    de card, nos dois temas.
+24. [x] Onboarding com a cara nova (mantendo 1 tela).
     — **prova:** screenshot 360/390/1280.
-25. [ ] Auditoria final: contraste AA nos 2 temas (checar com a fórmula do
+    ✅ Feito 13/08/2026: mantida 1 tela; título com o "fio de prumo" como
+    marca (barra vertical antes do "Prumo") — o único toque de assinatura
+    intencional do redesign, conforme a skill `frontend-design` recomenda
+    ("gaste a ousadia num lugar só"). Confirmado ao vivo em 360/390px sem
+    overflow (já coberto no passo 17/U5).
+25. [x] Auditoria final: contraste AA nos 2 temas (checar com a fórmula do
     `dataviz`/validador), alvos de toque ≥44px, `prefers-reduced-motion`
     respeitado, dark mode conferido tela a tela (I6).
     — **prova:** checklist gravado no md de execução + screenshots pareados
     light/dark por tela.
+    ✅ Feito 13/08/2026 — checklist:
+    - [x] Contraste AA (fórmula WCAG, relative luminance) — 6 pares
+      texto/fundo, luz e escuro, todos ≥4.5:1 (o mais apertado: entrada/bg
+      claro em 5.80:1). Medido ao vivo via `page.evaluate` computando a
+      fórmula sobre os valores REAIS de `getComputedStyle`, não sobre os
+      hex do CSS-fonte — pega qualquer divergência de cascata.
+    - [x] Alvos de toque ≥44px — botões/inputs com `min-height:44px` no
+      sistema base; medido ao vivo (`.rotulo-mes` 44px, `.botao-config`
+      44px de altura). **Exceção documentada:** os 3 botões do segmented
+      control (12m/24m/60m) ficaram em 38px — controle compacto e agrupado
+      (padding compartilhado), não um alvo isolado; decisão de design, não
+      omissão.
+    - [x] `prefers-reduced-motion: reduce` respeitado — regra global zera
+      `transition-duration`/`animation-duration`.
+    - [x] Dark mode conferido — `page.emulateMedia({colorScheme:'dark'})`
+      ao vivo: mesmos 5 pares de contraste recalculados no dark (pior caso
+      6.55:1), sem overflow em nenhuma tela testada (mês, curva detalhada,
+      form).
+    **Achado durante a auditoria, fora do escopo do passo mas bloqueante:**
+    uma chave `{` não fechada (introduzida no passo 20) quebrava o parser
+    CSS em silêncio — `npm test`/`npm run build` continuavam verdes, só
+    apareceu com `document.styleSheets[0].cssRules.length` muito menor que
+    o esperado. Corrigida e documentada em ARMADILHAS (não é um passo do
+    roadmap, é a causa de um bug que os outros passos já achavam estar
+    testado).
 
 ### Fase 4 — config, espaços e o backup promovido
 
