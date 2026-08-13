@@ -83,6 +83,23 @@ act(...)" sem isso, mesmo com `act` importado de `'react'`).
 assíncrono assentar (loading → dados) deve fazer o polling em `act`s
 separados, nunca um único `act` com `await`s aninhados no meio.
 
+## `git push` rejeitado com 403 — remote HTTPS depende da conta `gh` ativa
+
+**Sintoma (13/08/2026, ao fechar a Fase 0):** `git push` deu
+`Permission to dosxnjos/prumo.git denied to dados-produto-gruponomura` —
+403, mesmo com o repo correto e o commit certo.
+
+**Causa:** o remote estava em HTTPS (`https://github.com/dosxnjos/prumo.git`),
+que autentica pela conta `gh` ativa no processo — que é global da máquina,
+não por sessão/pasta, e desde a migração pra org o default costuma ser a
+conta corporativa. `prumo` é repo **pessoal** (`dosxnjos`).
+
+**Correção:** `git remote set-url origin git@github.com:dosxnjos/prumo.git`
+— com SSH, o push nunca mais depende de qual conta o `gh` CLI tem ativa
+(a chave SSH da máquina já é do `dosxnjos`, confirmado com
+`ssh -T git@github.com`). Regra geral já documentada em
+`C:\Dev\CLAUDE.md` § "Git: commitar direto na main" — receita completa lá.
+
 ## MCP `github` autentica como a conta corporativa, não `dosxnjos`
 
 **Sintoma:** `mcp__github__create_repository` criou o repo em
