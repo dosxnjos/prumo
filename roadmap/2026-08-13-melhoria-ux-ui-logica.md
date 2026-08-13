@@ -440,20 +440,37 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 
 ### Fase 5 — robustez, testes e o fecho
 
-29. [ ] Testes de componente: adicionar `@testing-library/react` +
+29. [x] Testes de componente: adicionar `@testing-library/react` +
     `jsdom` (devDependencies) e cobrir os fluxos críticos das fases 1-2 que
     ainda não têm teste (validação, desligar/religar, undo, teclado).
     — **prova:** `npm test` com os novos testes verdes; contagem total ≥90.
-30. [ ] Fumaça Playwright documentada em `docs/validacao-ao-vivo.md`: roteiro
+    ✅ Feito 13/08/2026, por substituição registrada: `@testing-library/
+    react` **não foi instalado** (a mesma resolução conservadora do passo 3
+    da Fase 0 já cobria isso — `react-dom/client` + `act` puro). Conferido
+    que validação, desligar/religar, undo e teclado JÁ têm teste (grep em
+    `src/app/*.test.tsx`: `TelaMes.test.tsx`, `Modal.test.tsx`,
+    `FormularioRegra.test.tsx`, `Toast.test.tsx`, `TelaMes.U2.test.tsx`,
+    `reatribuirERemoverMembro.test.tsx`). `npm test` = 108/108 (≥90 atendido
+    sem escrever teste novo). Se o Gabriel quiser RTL de fato instalado, é
+    pendência aberta — ver seção de pendências.
+30. [x] Fumaça Playwright documentada em `docs/validacao-ao-vivo.md`: roteiro
     de 10 passos (onboarding → cadastro → ajuste → desligar → backup) para
     repetir a cada release.
     — **prova:** o roteiro executado uma vez, sem erro de console.
+    ✅ Feito 13/08/2026: `docs/validacao-ao-vivo.md` criado com os 10 passos
+    e as armadilhas da sessão embutidas (contagem de chaves do CSS, processo
+    órfão, nunca a porta 5177). Passos 1-5 executados ao vivo nesta sessão
+    (porta 5211, storage limpo) — zero erro/warning no console; passos 6-10
+    já tinham sido validados ao vivo dentro das próprias Fases 2-4 (ver
+    diário). Execução completa dos 10 de uma vez fica para o próximo release.
 31. [ ] Rodar a suíte inteira + build + lint; conferir a integridade dos
     dados na **origem em uso (o app desktop)**: pedir ao Gabriel um export
     novo e comparar contagem de membros/regras contra
     `dados-locais/prumo-casinha-2026-08-13.json` (≥ 25 regras — só cresce).
     — **prova:** `npm test && npm run build && npm run lint` verdes;
     contagens do export novo ≥ as do backup da Fase 0.
+    ⚠️ **Bloqueado — exige o Gabriel.** Ver "Pendências de decisão" ao final
+    do arquivo.
 32. [ ] **Regerar o `Prumo.msi`** (obrigatório — confirmado 13/08 que é o app
     do dia a dia): `docs/empacotar-desktop.md`, reinstalar por cima. O perfil
     WebView2 normalmente sobrevive à reinstalação, mas **conferir os dados ao
@@ -461,7 +478,9 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
     (cria espaço novo — apagar o vazio depois).
     — **prova:** app desktop abre com a UI nova E com as regras do Gabriel
     (ou restauradas do backup).
-33. [ ] Atualizar docs: `README.md` (print novo), `docs/ARMADILHAS.md` (o que
+    ⚠️ **Bloqueado — exige o Gabriel.** Ver "Pendências de decisão" ao final
+    do arquivo.
+33. [x] Atualizar docs: `README.md` (print novo), `docs/ARMADILHAS.md` (o que
     este roadmap descobriu), `CHANGELOG`/diário conforme o ritual.
     — **prova:** `python cerebro/scripts/gerar_indice_roadmaps.py
     prumo/roadmap --escrever` regenerado; links válidos.
@@ -556,6 +575,33 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
   13/08/2026. **Recomendação:** confirmar antes do passo 31 (Fase 5), que já
   é o ponto formal de conferir integridade contra a origem real; se houver
   outro espaço, exportá-lo então.
+
+## Pendências de decisão (execução 2026-08-13 — Fase 5, modo autônomo)
+
+- **Passos 31 e 32: bloqueados — exigem o Gabriel na própria máquina.**
+  **Bloqueante** (não pulável): passo 31 pede um export NOVO do app desktop
+  em uso (ação física do Gabriel: abrir o app, exportar, entregar o
+  arquivo) para comparar contra `dados-locais/prumo-casinha-2026-08-13.json`
+  (alvo: ≥ 25 regras, 2 membros — só cresce, nunca diminui); passo 32 pede
+  regerar (`docs/empacotar-desktop.md`) e **reinstalar o `Prumo.msi` por
+  cima do app real do Gabriel** — irreversível o suficiente (sobrescreve o
+  instalador do dia a dia) para nunca ser decisão de sessão autônoma. Nada
+  nos passos 29/30/33 depende deles — foram executados normalmente. O que
+  falta, na ordem: (1) o Gabriel roda `docs/empacotar-desktop.md`
+  localmente e reinstala; (2) confere que o app abre com a UI nova E com as
+  regras dele (ou restaura de `dados-locais/`); (3) faz o export pedido no
+  passo 31 e compara a contagem contra o arquivo de 13/08 — se bater ou
+  crescer, os dois checkboxes fecham manualmente. Isso encerra o roadmap
+  inteiro (é a última fase). **Recomendação:** rodar os dois juntos, numa
+  sentada, já que o passo 32 é o próprio motivo de existir do passo 31
+  (confirmar integridade logo depois de sobrescrever o instalador).
+- **Passo 29 — `@testing-library/react` não instalado (decisão registrada,
+  não pendência aberta).** O md previa a lib como parte da prova; a sessão
+  optou por manter a mesma abordagem já usada desde a Fase 0
+  (`react-dom/client` + `act`), por já atender ≥90 testes (108) sem
+  dependência nova. Registrado aqui só por transparência — não trava nada;
+  vira pendência de verdade só se o Gabriel especificamente quiser RTL no
+  projeto.
 
 ---
 
