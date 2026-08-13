@@ -15,9 +15,11 @@ lógica de apresentação **sem tocar na semântica do motor testado**.
 
 ### ⚠️ A restrição nº 1 — os dados reais (ler antes de qualquer passo)
 
-Os dados vivem no **IndexedDB da origem `http://localhost:5177`** (porta
-fixa de propósito — `iniciar.bat`) e possivelmente também no app desktop
-(`Prumo.msi`, perfil WebView2 isolado). Regras invioláveis em TODAS as fases:
+**Confirmado pelo Gabriel em 13/08/2026: ele usa o app no dia a dia e a
+origem viva é o app desktop (`Prumo.msi`, perfil WebView2 isolado).** A
+origem `http://localhost:5177` (porta fixa do `iniciar.bat`) pode guardar
+uma cópia mais antiga — preservar as duas. Regras invioláveis em TODAS as
+fases:
 
 - **Não mudar**: nome do DB (`prumo-db`), do store (`prumo-store`), das chaves
   (`espacos-indice`, `espaco-ativo-id`, `espaco-<id>`) nem a porta 5177 do
@@ -117,16 +119,16 @@ inverter; 3 depende de 1-2 (não pintar tela que vai mudar de estrutura);
 
 ### Fase 0 — rede de segurança (fazer ANTES de tocar em qualquer coisa)
 
-1. [ ] **Backup dos dados reais.** Subir o dev na porta real (`npm run dev --
-   --port 5177 --strictPort`), abrir `http://localhost:5177` no Chrome do
-   Gabriel (Playwright MCP — é o perfil onde os dados estão), e para CADA
-   espaço listado: ⚙︎ → exportar backup (JSON). Mover os arquivos para
-   `prumo/dados-locais/` (gitignored — conferir com `git status --porcelain`
-   antes de seguir). Se o Gabriel também usa o `Prumo.msi`, pedir a ele o
-   export de lá (não é automatizável de fora).
-   — **prova:** arquivos `prumo-*.json` em `dados-locais/`, cada um com
-   `schemaVersion: 1` e `regras.length > 0`; `git status --porcelain` não os
-   lista.
+1. [x] **Backup dos dados reais.** ✅ Feito 13/08/2026: o Gabriel exportou o
+   JSON do app em uso e a sessão arquitetora validou e guardou em
+   `dados-locais/` (`prumo-casinha-2026-08-13.json`: schemaVersion 1, espaço
+   "Casinha", 2 membros, 25 regras; mais o export de 05/08 como histórico).
+   `git status --porcelain` confirmou a pasta ignorada.
+   **Sobra para o executor:** confirmar com o Gabriel que "Casinha" é o
+   ÚNICO espaço no app em uso — espaço sem export não tem backup (o export
+   é por espaço).
+   — **prova:** resposta do Gabriel registrada aqui; se houver outro espaço,
+   repetir o export antes de seguir.
 2. [ ] Separar `useEspaco` para `src/app/useEspaco.ts` (o `ContextoEspaco.tsx`
    fica só com `ProvedorEspaco`), atualizando os 10 imports. Corrige o Fast
    Refresh (M1) antes das sessões longas de dev que este roadmap exige.
@@ -292,16 +294,19 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
     de 10 passos (onboarding → cadastro → ajuste → desligar → backup) para
     repetir a cada release.
     — **prova:** o roteiro executado uma vez, sem erro de console.
-31. [ ] Rodar a suíte inteira + build + lint; conferir na origem real
-    (`localhost:5177`) que os dados do Gabriel continuam íntegros (mesma
-    contagem de espaços/regras do backup da Fase 0).
+31. [ ] Rodar a suíte inteira + build + lint; conferir a integridade dos
+    dados na **origem em uso (o app desktop)**: pedir ao Gabriel um export
+    novo e comparar contagem de membros/regras contra
+    `dados-locais/prumo-casinha-2026-08-13.json` (≥ 25 regras — só cresce).
     — **prova:** `npm test && npm run build && npm run lint` verdes;
-    contagem conferida via Playwright na origem real.
-32. [ ] **Se o Gabriel usa o `Prumo.msi` no dia a dia**: regerar o instalador
-    (`docs/empacotar-desktop.md`) com a UI nova e reinstalar — senão o
-    desktop fica preso na versão velha. Lembrar: perfil isolado → migração é
-    export/import.
-    — **prova:** MSI regenerado abre com a UI nova e importa o backup.
+    contagens do export novo ≥ as do backup da Fase 0.
+32. [ ] **Regerar o `Prumo.msi`** (obrigatório — confirmado 13/08 que é o app
+    do dia a dia): `docs/empacotar-desktop.md`, reinstalar por cima. O perfil
+    WebView2 normalmente sobrevive à reinstalação, mas **conferir os dados ao
+    abrir**; se vier vazio, importar `dados-locais/prumo-casinha-<data>.json`
+    (cria espaço novo — apagar o vazio depois).
+    — **prova:** app desktop abre com a UI nova E com as regras do Gabriel
+    (ou restauradas do backup).
 33. [ ] Atualizar docs: `README.md` (print novo), `docs/ARMADILHAS.md` (o que
     este roadmap descobriu), `CHANGELOG`/diário conforme o ritual.
     — **prova:** `python cerebro/scripts/gerar_indice_roadmaps.py
@@ -367,13 +372,15 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 | L4 muda o saldo que o Gabriel vê no mês (número diferente do que ele confere hoje) | é correção de consistência (dois números para o mesmo mês hoje); a linha sintética "Atrasados" torna a diferença explicável na tela; testes de igualdade com a tabela |
 | HMR mente durante o dev (armadilha conhecida) | reload completo antes de concluir que algo quebrou; passo 2 corrige a causa |
 | campo novo `ultimoBackupEm` esbarrar em backup antigo | campo opcional com `??`; teste de import v1 sem o campo (passo 28) |
-| MSI desatualizado virar "segunda verdade" da UI | passo 32 condicional; perguntar ao Gabriel se o MSI está em uso |
+| MSI desatualizado virar "segunda verdade" da UI | passo 32 obrigatório (MSI é o app do dia a dia, confirmado 13/08) |
 | redesign regride acessibilidade que já existe | passo 25 audita; passo 16 melhora teclado/foco |
 
 **Pendências (não travam a escrita, travam passos específicos):**
 
-- Passo 1: se houver dados no `Prumo.msi`, o export de lá é manual (Gabriel).
-- Passo 32: depende de saber se o MSI está em uso diário.
+- ~~Passo 1: export manual do MSI~~ ✅ feito pelo Gabriel em 13/08, validado
+  em `dados-locais/`.
+- ~~Passo 32: MSI em uso?~~ ✅ sim (13/08) — passo obrigatório.
+- Passo 1 (sobra): confirmar que "Casinha" é o único espaço no app em uso.
 
 ---
 
