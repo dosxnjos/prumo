@@ -33,3 +33,7 @@ fixtures/local/
 *.njsproj
 *.sln
 *.sw?
+
+# prints e material de trabalho de sessão — nunca versionar
+temp/
+.playwright-mcp/

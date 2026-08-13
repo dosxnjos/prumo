@@ -11,10 +11,11 @@ Regenerar ao criar ou fechar um roadmap:
 Este índice também é a porta de entrada de cada arquivo da pasta no grafo
 do vault — sem ele, roadmap vira nó solto no Obsidian.
 
-## Sem seção de passos (1)
+## Ativos (2)
 
 | Data | Arquivo | Resumo |
 | --- | --- | --- |
+| 2026-08-13 | [2026-08-13-melhoria-ux-ui-logica.md](2026-08-13-melhoria-ux-ui-logica.md) | Roadmap de melhoria — UX, UI e lógica do Prumo (2026-08-13) |
 | 2026-08-05 | [2026-08-05-melhoria-app-prumo.md](2026-08-05-melhoria-app-prumo.md) | Roadmap — Prumo: app de finanças que substitui a planilha (2026-08-05) |
 
 ## Limitação conhecida
@@ -25,4 +26,4 @@ de checkbox `[x]`/`[ ]` — esses caem em **N/A** mesmo com progresso real
 feito na prosa, zero checkbox no arquivo). Para julgar backlog real (e
 não só navegar), abrir o arquivo antes de assumir que N/A = nada feito.
 
-<!-- 1 arquivos indexados -->
+<!-- 2 arquivos indexados -->
