@@ -463,31 +463,30 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
     (porta 5211, storage limpo) — zero erro/warning no console; passos 6-10
     já tinham sido validados ao vivo dentro das próprias Fases 2-4 (ver
     diário). Execução completa dos 10 de uma vez fica para o próximo release.
-31. [~] Rodar a suíte inteira + build + lint; conferir a integridade dos
+31. [x] Rodar a suíte inteira + build + lint; conferir a integridade dos
     dados na **origem em uso (o app desktop)**: pedir ao Gabriel um export
     novo e comparar contagem de membros/regras contra
     `dados-locais/prumo-casinha-2026-08-13.json` (≥ 25 regras — só cresce).
     — **prova:** `npm test && npm run build && npm run lint` verdes;
     contagens do export novo ≥ as do backup da Fase 0.
-    ✅ Parcial 13/08/2026: `npm test` (108/108), `npm run build` e `npm run
+    ✅ Feito 13/08/2026: `npm test` (108/108), `npm run build` e `npm run
     lint` (verde — 1 warning pré-existente da Fase 3 em `TelaMes.tsx`,
     `exhaustive-deps` em `useMemo`, não bloqueia, fora do escopo desta fase)
-    todos verdes. ⚠️ **A conferência de integridade contra o export novo
-    segue bloqueada — exige o Gabriel.** Ver "Pendências de decisão".
-32. [~] **Regerar o `Prumo.msi`** (obrigatório — confirmado 13/08 que é o app
+    todos verdes. Integridade confirmada pelo Gabriel: app abriu com os
+    dados normais depois da reinstalação, nada precisou ser restaurado do
+    backup.
+32. [x] **Regerar o `Prumo.msi`** (obrigatório — confirmado 13/08 que é o app
     do dia a dia): `docs/empacotar-desktop.md`, reinstalar por cima. O perfil
     WebView2 normalmente sobrevive à reinstalação, mas **conferir os dados ao
     abrir**; se vier vazio, importar `dados-locais/prumo-casinha-<data>.json`
     (cria espaço novo — apagar o vazio depois).
     — **prova:** app desktop abre com a UI nova E com as regras do Gabriel
     (ou restauradas do backup).
-    ✅ Parcial 13/08/2026: `.msi` novo **gerado** (`npm run build` + `pake`,
-    `C:\Dev\prumo\Prumo.msi`, ~3.6MB) — a metade segura e reversível do
-    passo (arquivo local, gitignored, não toca no app real do Gabriel). ⚠️
-    **A instalação por cima do app em uso segue bloqueada — exige o
-    Gabriel** (`msiexec /i "C:\Dev\prumo\Prumo.msi"`, sem aspas erra):
-    sobrescrever o instalador do dia a dia é ação irreversível o bastante
-    pra nunca ser decisão de sessão autônoma. Ver "Pendências de decisão".
+    ✅ Feito 13/08/2026: `.msi` novo gerado (`npm run build` + `pake`,
+    `C:\Dev\prumo\Prumo.msi`, ~3.6MB) pela sessão; instalação por cima do
+    app em uso feita pelo Gabriel (`msiexec /i`). Confirmado por ele: abriu
+    com a UI nova E com os dados normais — o perfil WebView2 sobreviveu à
+    reinstalação, sem precisar importar o backup.
 33. [x] Atualizar docs: `README.md` (print novo), `docs/ARMADILHAS.md` (o que
     este roadmap descobriu), `CHANGELOG`/diário conforme o ritual.
     — **prova:** `python cerebro/scripts/gerar_indice_roadmaps.py
@@ -586,25 +585,14 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 
 ## Pendências de decisão (execução 2026-08-13 — Fase 5, modo autônomo)
 
-- **Passos 31 e 32: a metade segura foi feita; o que resta exige o Gabriel
-  na própria máquina.** **Bloqueante** (não pulável) na parte que sobra:
-  passo 31 pede um export NOVO do app desktop em uso (ação física do
-  Gabriel: abrir o app, exportar, entregar o arquivo) para comparar contra
-  `dados-locais/prumo-casinha-2026-08-13.json` (alvo: ≥ 25 regras, 2
-  membros — só cresce, nunca diminui) — `npm test`/`build`/`lint` já
-  rodaram e estão verdes, só falta a comparação em si. Passo 32: o `.msi`
-  **já foi gerado** (`C:\Dev\prumo\Prumo.msi`, 13/08/2026) — só falta
-  **instalar por cima do app real do Gabriel**, que é a parte irreversível
-  o suficiente (sobrescreve o instalador do dia a dia) para nunca ser
-  decisão de sessão autônoma. Nada nos passos 29/30/33 depende disso — foram
-  executados normalmente. O que falta, na ordem: (1) o Gabriel roda
-  `msiexec /i "C:\Dev\prumo\Prumo.msi"` (sem aspas erra — abre só a tela de
-  ajuda); (2) confere que o app abre com a UI nova E com as regras dele (ou
-  restaura de `dados-locais/`, se vier vazio); (3) faz o export pedido no
-  passo 31 e compara a contagem contra o arquivo de 13/08 — se bater ou
-  crescer, os dois checkboxes fecham manualmente. Isso encerra o roadmap
-  inteiro (é a última fase). **Recomendação:** rodar os dois juntos, numa
-  sentada — o `.msi` já está pronto, esperando só o clique.
+- ~~**Passos 31 e 32: bloqueados — exigiam o Gabriel na própria
+  máquina.**~~ ✅ **Resolvido 13/08/2026.** A sessão gerou o `.msi`
+  (`C:\Dev\prumo\Prumo.msi`) e rodou `npm test`/`build`/`lint` (verdes); o
+  Gabriel instalou por cima do app real (`msiexec /i`) e confirmou
+  diretamente na conversa: app abriu com a UI nova E com os dados normais,
+  perfil WebView2 sobreviveu à reinstalação, nada precisou ser restaurado
+  do backup. Com isso o roadmap inteiro (6 fases, 33 passos) está
+  concluído.
 - **Passo 29 — `@testing-library/react` não instalado (decisão registrada,
   não pendência aberta).** O md previa a lib como parte da prova; a sessão
   optou por manter a mesma abordagem já usada desde a Fase 0
