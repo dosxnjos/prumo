@@ -240,35 +240,64 @@ inverter; 3 depende de 1-2 (não pintar tela que vai mudar de estrutura);
 
 ### Fase 2 — o fluxo diário (navegação e edição)
 
-13. [ ] **U1**: rótulo do mês vira botão que abre o picker nativo
+13. [x] **U1**: rótulo do mês vira botão que abre o picker nativo
     (`inputRef.current.showPicker()`, try/catch com fallback de exibir o
     input) + botão "hoje" visível sempre que `mes !== mesAtual()`.
     — **prova:** Playwright: clicar no rótulo abre picker (ou input visível);
     "hoje" volta e some no mês corrente.
-14. [ ] **U2**: linha do item inteira é o alvo de toque (abre edição); o
+    ✅ Feito 13/08/2026, confirmado ao vivo com Playwright (porta de teste
+    isolada 5211): clique no rótulo sem erro de console (picker nativo abre);
+    "hoje" aparece ao navegar pra set/2026 e some ao voltar pro mês atual.
+14. [x] **U2**: linha do item inteira é o alvo de toque (abre edição); o
     "ajustar este mês" sai da lista e vira ação dentro do form de edição
     ("só em <mês>: mudar valor / pular"), que já sabe o mês de origem.
     Categoria vira sub-rótulo da linha (L9 ganha o primeiro consumidor).
     — **prova:** Playwright: lista sem botões repetidos; ajuste continua
     acessível em ≤2 toques; marca ✎ preservada.
-15. [ ] **U6 + L3 v2**: sistema de toast mínimo (componente próprio, sem lib):
+    ✅ Feito 13/08/2026: `AjustePontual.tsx` foi absorvido inteiro por
+    `FormularioRegra` (removido do repo); confirmado ao vivo — 1 toque na
+    linha abre o form com a seção "só em ago/2026" já visível (não precisou
+    de 2º toque). `vitest` cobrindo ambos (`TelaMes.U2.test.tsx`).
+15. [x] **U6 + L3 v2**: sistema de toast mínimo (componente próprio, sem lib):
     "item salvo", "ajuste de <mês> salvo", e apagar vira imediato com
     **desfazer** (5s) — o toast guarda a regra e reinsere; a confirmação do
     passo 8 sai.
     — **prova:** vitest: apagar → desfazer restaura idêntico (mesmo id);
     timeout consuma a remoção.
-16. [ ] **U8**: modais com `Enter` submete (form de verdade com `onSubmit`),
+    ✅ Feito 13/08/2026 (`Toast.tsx`/`useToast.ts`, nova função de contexto
+    `restaurarRegra` — lê fresco do storage, igual `salvarDados`, porque o
+    desfazer pode disparar bem depois do form já ter fechado). Confirmado ao
+    vivo: apagar é imediato, toast "'Internet' apagado" some sozinho depois
+    de ~5s sem clicar em desfazer.
+16. [x] **U8**: modais com `Enter` submete (form de verdade com `onSubmit`),
     `Esc` fecha, foco inicial no primeiro campo, foco devolvido ao gatilho ao
     fechar. Um componente `Modal` compartilhado para os 5 overlays.
     — **prova:** vitest de teclado nos 3 fluxos principais; axe/Playwright
     sem regressão de foco.
-17. [ ] **U5**: onboarding — `.linha-membro` com `flex-wrap`, cores em linha
+    ✅ Feito 13/08/2026 (`Modal.tsx`, `Modal.test.tsx`). Nota: como
+    `AjustePontual` foi absorvido no passo 14, sobraram **4** overlays, não
+    5 — `FormularioRegra` e `ConfigFinanceiraTela` usam `onSubmit` (Enter
+    funciona, confirmado ao vivo); `PainelEspacos` e `TelaCurvaDetalhada`
+    não têm uma ação primária única, então usam `Modal` sem `onSubmit`
+    (ganham Esc/foco, mas Enter não submete nada — não havia "o quê"
+    submeter). Pegadinha descoberta e documentada em ARMADILHAS: `min`/
+    `required` num `<input>` dentro do `<form>` bloqueia o `submit` em
+    silêncio — `noValidate` no `Modal` resolve.
+17. [x] **U5**: onboarding — `.linha-membro` com `flex-wrap`, cores em linha
     própria no mobile; estilo `:disabled` real no botão (opacidade + cursor).
     — **prova:** Playwright 360px e 390px: `document.documentElement.scrollWidth
     <= clientWidth`; screenshot do botão desabilitado distinto.
-18. [ ] Empty states: mês vazio ganha CTA ("nenhum item ainda — + novo item");
+    ✅ Feito 13/08/2026, confirmado ao vivo com Playwright: 390px sem
+    overflow (1 membro) e 360px sem overflow (2 membros, cores em linha
+    própria); `button:disabled` com opacity 0.45 + cursor not-allowed
+    confirmado via `getComputedStyle`.
+18. [x] Empty states: mês vazio ganha CTA ("nenhum item ainda — + novo item");
     espaço recém-criado orienta primeiro cadastro.
     — **prova:** screenshot Playwright dos dois estados.
+    ✅ Feito 13/08/2026: dois estados distintos (`regras.length===0` no
+    espaço inteiro → "Esse espaço tá novo — cadastra o primeiro item pra
+    começar."; só o mês atual vazio → "Nenhum item neste mês."), ambos com
+    CTA "+ novo item". Confirmado ao vivo (espaço novo) via Playwright.
 
 ### Fase 3 — o redesign visual (a fase "a teu gosto")
 

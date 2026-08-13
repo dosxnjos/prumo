@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import { useEspaco } from './useEspaco'
 import { formatarBRL } from '../dominio/dinheiro'
 import { paraConfigProjecao } from '../dominio/config'
@@ -25,18 +25,30 @@ function agruparPorMembro(ocorrencias: OcorrenciaExibida[]) {
 }
 
 interface Props {
-  onEditarRegra: (regra: Regra | null) => void
-  onAjustarOcorrencia: (regra: Regra, mes: Mes) => void
+  /** U2: `mesOrigem` só é passado ao editar uma ocorrência da lista (nunca no "+ novo item"). */
+  onEditarRegra: (regra: Regra | null, mesOrigem?: Mes) => void
 }
 
-export function TelaMes({ onEditarRegra, onAjustarOcorrencia }: Props) {
+export function TelaMes({ onEditarRegra }: Props) {
   const { espacoAtivo, dados, salvarRegras } = useEspaco()
   const [mes, setMes] = useState<Mes>(mesAtual())
   const [visiveis, setVisiveis] = useState(LIMITE_LISTA)
+  const refInputMes = useRef<HTMLInputElement>(null)
+  const [inputMesVisivel, setInputMesVisivel] = useState(false)
 
   const regras = dados?.regras ?? []
   const desligadas = regras.filter((r) => !r.ativa)
   const ehMesPassado = mes < mesAtual()
+
+  /** U1: navegador sem `showPicker()` (raro, mas existe) cai pro input visível. */
+  function abrirPickerMes() {
+    try {
+      refInputMes.current?.showPicker()
+    } catch {
+      setInputMesVisivel(true)
+      refInputMes.current?.focus()
+    }
+  }
 
   async function religar(regra: Regra) {
     if (!espacoAtivo || !dados) return
@@ -106,13 +118,22 @@ export function TelaMes({ onEditarRegra, onAjustarOcorrencia }: Props) {
           ‹
         </button>
         <div className="mes-atual">
-          <strong>{rotulo(mes)}</strong>
+          <button type="button" className="rotulo-mes" onClick={abrirPickerMes}>
+            {rotulo(mes)}
+          </button>
           <input
+            ref={refInputMes}
             type="month"
             aria-label="pular para mês"
             value={mes}
+            className={inputMesVisivel ? 'visivel' : undefined}
             onChange={(e) => e.target.value && setMes(e.target.value)}
           />
+          {mes !== mesAtual() && (
+            <button type="button" className="botao-hoje" onClick={() => setMes(mesAtual())}>
+              hoje
+            </button>
+          )}
         </div>
         <button type="button" aria-label="mês seguinte" onClick={() => setMes((m) => somarMeses(m, 1))}>
           ›
@@ -147,16 +168,20 @@ export function TelaMes({ onEditarRegra, onAjustarOcorrencia }: Props) {
           <ul>
             {itens.map((oc) => (
               <li key={oc.regra.id} className={oc.regra.excecoes[mes] ? 'ajustado' : ''}>
-                <button type="button" onClick={() => onEditarRegra(oc.regra)} className="nome-item">
-                  {oc.regra.nome}
-                  {oc.regra.excecoes[mes] && <span className="marca-ajuste" title="ajustado neste mês">✎</span>}
-                </button>
-                <span className={oc.regra.fluxo === 'entrada' ? 'valor entrada' : 'valor saida'}>
-                  {oc.regra.fluxo === 'saida' ? '−' : '+'}
-                  {formatarBRL(oc.valorCentavos)}
-                </span>
-                <button type="button" className="ajustar" onClick={() => onAjustarOcorrencia(oc.regra, mes)}>
-                  ajustar este mês
+                <button type="button" onClick={() => onEditarRegra(oc.regra, mes)} className="linha-item">
+                  <span className="nome-e-categoria">
+                    <span className="nome-item">
+                      {oc.regra.nome}
+                      {oc.regra.excecoes[mes] && (
+                        <span className="marca-ajuste" title="ajustado neste mês">✎</span>
+                      )}
+                    </span>
+                    {oc.regra.categoria && <span className="categoria-item">{oc.regra.categoria}</span>}
+                  </span>
+                  <span className={oc.regra.fluxo === 'entrada' ? 'valor entrada' : 'valor saida'}>
+                    {oc.regra.fluxo === 'saida' ? '−' : '+'}
+                    {formatarBRL(oc.valorCentavos)}
+                  </span>
                 </button>
               </li>
             ))}
@@ -164,7 +189,23 @@ export function TelaMes({ onEditarRegra, onAjustarOcorrencia }: Props) {
         </section>
       ))}
 
-      {ocorrencias.length === 0 && <p className="vazio">Nenhum item neste mês.</p>}
+      {ocorrencias.length === 0 && regras.length === 0 && (
+        <div className="vazio-espaco">
+          <p>Esse espaço tá novo — cadastra o primeiro item pra começar.</p>
+          <button type="button" onClick={() => onEditarRegra(null)}>
+            + novo item
+          </button>
+        </div>
+      )}
+
+      {ocorrencias.length === 0 && regras.length > 0 && (
+        <div className="vazio">
+          <p>Nenhum item neste mês.</p>
+          <button type="button" onClick={() => onEditarRegra(null)}>
+            + novo item
+          </button>
+        </div>
+      )}
 
       {cortou && (
         <button type="button" onClick={() => setVisiveis((v) => v + LIMITE_LISTA)}>

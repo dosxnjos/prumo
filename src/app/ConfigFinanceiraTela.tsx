@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react'
 import { useEspaco } from './useEspaco'
+import { Modal } from './Modal'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
 import { metaPeDeMeiaCentavos, taxaRendimentoMensalDeCDI } from '../dominio/config'
 import type { ConfigFinanceira } from '../dominio/config'
@@ -89,8 +90,7 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
   })
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="config-financeira">
+    <Modal onFechar={onFechar} onSubmit={salvar} className="config-financeira" titulo="Configuração financeira">
         <h2>Configuração financeira</h2>
         <p className="subtitulo">vale só para o espaço "{espacoAtivo.nome}"</p>
 
@@ -165,7 +165,7 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
 
         <div className="acoes">
           <button type="button" onClick={onFechar}>cancelar</button>
-          <button type="button" className="salvar" disabled={salvando} onClick={salvar}>
+          <button type="submit" className="salvar" disabled={salvando}>
             salvar
           </button>
         </div>
@@ -190,8 +190,7 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
           />
         </div>
         {mensagemBackup && <p className="preview-derivado">{mensagemBackup}</p>}
-      </div>
-    </div>
+    </Modal>
   )
 }
 

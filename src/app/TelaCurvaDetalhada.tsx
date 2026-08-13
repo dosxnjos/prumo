@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { formatarBRL } from '../dominio/dinheiro'
 import { rotulo } from '../dominio/mes'
+import { Modal } from './Modal'
 import { useSerieProjetada } from './useSerieProjetada'
 
 const OPCOES_HORIZONTE = [12, 24, 60] as const
@@ -53,8 +54,7 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
   const passoRotulo = passoRotuloX(serie.length)
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="curva-detalhada">
+    <Modal onFechar={onFechar} className="curva-detalhada" titulo="Curva de saldo — mês a mês">
         <div className="curva-detalhada-cabecalho">
           <h2>Curva de saldo — mês a mês</h2>
           <button type="button" onClick={onFechar}>fechar</button>
@@ -140,7 +140,6 @@ export function TelaCurvaDetalhada({ onFechar }: Props) {
             </tbody>
           </table>
         </div>
-      </div>
-    </div>
+    </Modal>
   )
 }

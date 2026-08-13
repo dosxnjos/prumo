@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { FormularioRegra } from './FormularioRegra'
 import { ProvedorEspaco } from './ContextoEspaco'
+import { ProvedorToast } from './Toast'
 import { definirEspacoAtivoId, storeLocal } from '../dados/store-local'
 import { configFinanceiraPadrao } from '../dominio/config'
 
@@ -34,7 +35,9 @@ async function montar(container: HTMLDivElement) {
   act(() => {
     root.render(
       <ProvedorEspaco>
-        <FormularioRegra regra={null} onFechar={() => {}} />
+        <ProvedorToast>
+          <FormularioRegra regra={null} onFechar={() => {}} />
+        </ProvedorToast>
       </ProvedorEspaco>,
     )
   })
@@ -100,7 +103,9 @@ describe('FormularioRegra — validação antes de salvar (L7)', () => {
     act(() => {
       root.render(
         <ProvedorEspaco>
-          <FormularioRegra regra={null} onFechar={() => { fechou = true }} />
+          <ProvedorToast>
+            <FormularioRegra regra={null} onFechar={() => { fechou = true }} />
+          </ProvedorToast>
         </ProvedorEspaco>,
       )
     })
@@ -157,7 +162,7 @@ describe('FormularioRegra — validação antes de salvar (L7)', () => {
   })
 })
 
-describe('FormularioRegra — confirmação inline ao apagar (L3)', () => {
+describe('FormularioRegra — apagar imediato com desfazer (L3 v2)', () => {
   let container: HTMLDivElement
 
   beforeEach(() => {
@@ -169,7 +174,7 @@ describe('FormularioRegra — confirmação inline ao apagar (L3)', () => {
     container.remove()
   })
 
-  it('primeiro clique não apaga; confirmação apaga', async () => {
+  async function montarComRegra(onFechar: () => void) {
     const espaco = await storeLocal.criarEspaco('Casa')
     const agora = new Date().toISOString()
     const regra = {
@@ -190,82 +195,63 @@ describe('FormularioRegra — confirmação inline ao apagar (L3)', () => {
     await storeLocal.salvar(espaco.id, { regras: [regra], config: configFinanceiraPadrao() })
     await definirEspacoAtivoId(espaco.id)
 
-    let fechou = false
     const root = createRoot(container)
     act(() => {
       root.render(
         <ProvedorEspaco>
-          <FormularioRegra regra={regra} onFechar={() => { fechou = true }} />
+          <ProvedorToast>
+            <FormularioRegra regra={regra} onFechar={onFechar} />
+          </ProvedorToast>
         </ProvedorEspaco>,
       )
     })
     await esperarContextoCarregar()
+    return { espaco, regra, root }
+  }
 
-    const botaoApagar = () => Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'apagar')!
+  it('apagar é imediato — sem confirmação — e mostra o toast com "desfazer"', async () => {
+    let fechou = false
+    const { espaco, root } = await montarComRegra(() => { fechou = true })
 
-    // primeiro clique: só entra em modo de confirmação, não apaga
-    act(() => clicar(botaoApagar()))
-    expect(fechou).toBe(false)
-    expect(container.textContent).toContain('Isso remove o item de TODOS os meses')
-
-    // segundo clique (no botão "apagar" da confirmação): apaga de verdade
-    act(() => clicar(botaoApagar()))
+    const botaoApagar = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'apagar')!
+    act(() => clicar(botaoApagar))
     for (let i = 0; i < 20 && !fechou; i++) {
-      await new Promise((r) => setTimeout(r, 10))
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10))
+      })
     }
-    expect(fechou).toBe(true)
 
-    const dadosFinais = await storeLocal.carregar(espaco.id)
-    expect(dadosFinais.regras).toHaveLength(0)
+    expect(fechou).toBe(true) // sem etapa de confirmação no meio
+    const dadosLogoApos = await storeLocal.carregar(espaco.id)
+    expect(dadosLogoApos.regras).toHaveLength(0)
+
+    expect(container.textContent).toContain('"Aluguel" apagado')
+    expect(Array.from(container.querySelectorAll('button')).some((b) => b.textContent === 'desfazer')).toBe(true)
 
     root.unmount()
   })
 
-  it('confirmação oferece "desligar" como alternativa a apagar', async () => {
-    const espaco = await storeLocal.criarEspaco('Casa')
-    const agora = new Date().toISOString()
-    const regra = {
-      id: 'r1',
-      espacoId: espaco.id,
-      nome: 'Aluguel',
-      fluxo: 'saida' as const,
-      membroId: 'compartilhado' as const,
-      categoria: 'moradia',
-      valorCentavos: 10000,
-      recorrencia: { tipo: 'mensal' as const, inicio: '2026-01', fim: null },
-      pagamento: { tipo: 'conta' as const },
-      ativa: true,
-      excecoes: {},
-      criadoEm: agora,
-      atualizadoEm: agora,
-    }
-    await storeLocal.salvar(espaco.id, { regras: [regra], config: configFinanceiraPadrao() })
-    await definirEspacoAtivoId(espaco.id)
-
-    let fechou = false
-    const root = createRoot(container)
-    act(() => {
-      root.render(
-        <ProvedorEspaco>
-          <FormularioRegra regra={regra} onFechar={() => { fechou = true }} />
-        </ProvedorEspaco>,
-      )
-    })
-    await esperarContextoCarregar()
+  it('desfazer restaura a regra apagada com o mesmo id', async () => {
+    const { espaco, regra, root } = await montarComRegra(() => {})
 
     const botaoApagar = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'apagar')!
     act(() => clicar(botaoApagar))
-
-    const botaoDesligar = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'desligar')!
-    act(() => clicar(botaoDesligar))
-    for (let i = 0; i < 20 && !fechou; i++) {
-      await new Promise((r) => setTimeout(r, 10))
+    for (let i = 0; i < 20 && !container.querySelector('.toast'); i++) {
+      await act(async () => {
+        await new Promise((r) => setTimeout(r, 10))
+      })
     }
-    expect(fechou).toBe(true)
 
-    const dadosFinais = await storeLocal.carregar(espaco.id)
-    expect(dadosFinais.regras).toHaveLength(1)
-    expect(dadosFinais.regras[0].ativa).toBe(false)
+    const botaoDesfazer = Array.from(container.querySelectorAll('button')).find((b) => b.textContent === 'desfazer')!
+    await act(async () => {
+      clicar(botaoDesfazer)
+      await new Promise((r) => setTimeout(r, 10))
+    })
+
+    const dadosRestaurados = await storeLocal.carregar(espaco.id)
+    expect(dadosRestaurados.regras).toHaveLength(1)
+    expect(dadosRestaurados.regras[0].id).toBe(regra.id)
+    expect(dadosRestaurados.regras[0].nome).toBe('Aluguel')
 
     root.unmount()
   })

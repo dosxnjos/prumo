@@ -85,7 +85,7 @@ describe('TelaMes — saldo unificado com a projeção (L4)', () => {
     act(() => {
       root.render(
         <ProvedorEspaco>
-          <TelaMes onEditarRegra={() => {}} onAjustarOcorrencia={() => {}} />
+          <TelaMes onEditarRegra={() => {}} />
         </ProvedorEspaco>,
       )
     })

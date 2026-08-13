@@ -106,6 +106,20 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     if (ativoId === espacoId) setDados(novosDados)
   }, [])
 
+  /**
+   * L3 v2: desfazer um "apagar" chamado a partir do toast — que pode
+   * disparar bem depois do componente que apagou já ter desmontado, então
+   * nunca pode confiar num `dados.regras` capturado por closure. Lê fresco,
+   * igual `salvarDados`.
+   */
+  const restaurarRegra = useCallback(async (espacoId: string, regra: DadosEspaco['regras'][number]) => {
+    const dadosAtuais = await storeLocal.carregar(espacoId)
+    const novosDados = { ...dadosAtuais, regras: [...dadosAtuais.regras, regra] }
+    await storeLocal.salvar(espacoId, novosDados)
+    const ativoId = await obterEspacoAtivoId()
+    if (ativoId === espacoId) setDados(novosDados)
+  }, [])
+
   const salvarRegras = useCallback(
     (espacoId: string, regras: DadosEspaco['regras']) => salvarDados(espacoId, { regras }),
     [salvarDados],
@@ -165,10 +179,11 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     salvarRegras,
     salvarConfig,
     reatribuirERemoverMembro,
+    restaurarRegra,
     exportarEspaco,
     importarEspaco,
     recarregar,
-  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, reatribuirERemoverMembro, exportarEspaco, importarEspaco, recarregar])
+  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, reatribuirERemoverMembro, restaurarRegra, exportarEspaco, importarEspaco, recarregar])
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>
 }

@@ -6,6 +6,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { TelaMes } from './TelaMes'
 import { FormularioRegra } from './FormularioRegra'
 import { ProvedorEspaco } from './ContextoEspaco'
+import { ProvedorToast } from './Toast'
 import { definirEspacoAtivoId, storeLocal } from '../dados/store-local'
 import { configFinanceiraPadrao } from '../dominio/config'
 import { mesAtual } from '../dominio/mes'
@@ -37,10 +38,7 @@ function Wrapper() {
   const [regraEmEdicao, setRegraEmEdicao] = useState<Regra | null | 'fechado'>('fechado')
   return (
     <>
-      <TelaMes
-        onEditarRegra={(r) => setRegraEmEdicao(r)}
-        onAjustarOcorrencia={() => {}}
-      />
+      <TelaMes onEditarRegra={(r) => setRegraEmEdicao(r)} />
       {regraEmEdicao !== 'fechado' && (
         <FormularioRegra regra={regraEmEdicao} onFechar={() => setRegraEmEdicao('fechado')} />
       )}
@@ -78,7 +76,9 @@ describe('TelaMes + FormularioRegra — desligar/religar item (L2)', () => {
     act(() => {
       root.render(
         <ProvedorEspaco>
-          <Wrapper />
+          <ProvedorToast>
+            <Wrapper />
+          </ProvedorToast>
         </ProvedorEspaco>,
       )
     })

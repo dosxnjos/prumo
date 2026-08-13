@@ -64,6 +64,11 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
 input,
 select {
   font: inherit;
@@ -107,7 +112,6 @@ select {
   }
 
   .formulario-regra,
-  .ajuste-pontual,
   .painel-espacos,
   .config-financeira {
     width: 420px;
@@ -209,10 +213,28 @@ select {
   font-size: 1.1em;
 }
 
+.rotulo-mes {
+  border: none;
+  padding: 0;
+  font-size: 1em;
+  font-weight: 500;
+}
+
+.botao-hoje {
+  font-size: 0.8em;
+  padding: 0.2em 0.6em;
+}
+
 .mes-atual input[type='month'] {
   opacity: 0;
   width: 1px;
   position: absolute;
+}
+
+.mes-atual input[type='month'].visivel {
+  opacity: 1;
+  width: auto;
+  position: static;
 }
 
 .resumo-mes {
@@ -239,6 +261,18 @@ select {
   margin-bottom: 16px;
 }
 
+.vazio,
+.vazio-espaco {
+  text-align: center;
+  padding: 24px 12px;
+  opacity: 0.85;
+}
+
+.vazio p,
+.vazio-espaco p {
+  margin: 0 0 12px;
+}
+
 .grupo-membro h2 {
   font-size: 0.95em;
   font-weight: 500;
@@ -254,18 +288,31 @@ select {
 }
 
 .grupo-membro li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 0;
+  padding: 0;
   border-bottom: 1px solid var(--linha);
 }
 
-.nome-item {
-  flex: 1;
+.linha-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
   text-align: left;
   border: none;
-  padding: 0;
+  padding: 8px 0;
+}
+
+.nome-e-categoria {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+}
+
+.categoria-item {
+  font-size: 0.8em;
+  opacity: 0.65;
 }
 
 .valor.entrada {
@@ -295,7 +342,6 @@ li.ajustado {
 }
 
 .formulario-regra,
-.ajuste-pontual,
 .painel-espacos {
   background: var(--bg);
   border-radius: 16px 16px 0 0;
@@ -305,8 +351,7 @@ li.ajustado {
   overflow-y: auto;
 }
 
-.formulario-regra label,
-.ajuste-pontual label {
+.formulario-regra label {
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -318,6 +363,13 @@ li.ajustado {
   align-items: center;
   gap: 6px !important;
   font-size: 0.9em;
+}
+
+.ajuste-mes-origem {
+  border: 1px solid var(--linha);
+  border-radius: 8px;
+  padding: 8px 12px 12px;
+  margin: 16px 0;
 }
 
 .acoes {
@@ -483,13 +535,26 @@ li.ajustado {
 .linha-membro {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 8px;
+}
+
+.linha-membro input {
+  min-width: 0;
+  flex: 1;
 }
 
 .cores {
   display: flex;
   gap: 4px;
+  flex-basis: 100%;
+}
+
+@media (min-width: 480px) {
+  .cores {
+    flex-basis: auto;
+  }
 }
 
 .cor {
@@ -553,4 +618,36 @@ button.apagar,
 button.remover {
   border-color: var(--saida);
   color: var(--saida);
+}
+
+.toasts {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 20;
+  width: calc(100% - 32px);
+  max-width: 420px;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--text-h);
+  color: var(--bg);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.toast button {
+  border-color: var(--bg);
+  color: var(--bg);
+  flex-shrink: 0;
 }

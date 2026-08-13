@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { AjustePontual } from './app/AjustePontual'
 import { ConfigFinanceiraTela } from './app/ConfigFinanceiraTela'
 import { ProvedorEspaco } from './app/ContextoEspaco'
 import { CurvaSaldo } from './app/CurvaSaldo'
@@ -8,14 +7,14 @@ import { Onboarding } from './app/Onboarding'
 import { PainelEspacos } from './app/PainelEspacos'
 import { ProgressoPeDeMeia } from './app/ProgressoPeDeMeia'
 import { TelaCurvaDetalhada } from './app/TelaCurvaDetalhada'
+import { ProvedorToast } from './app/Toast'
 import { useEspaco } from './app/useEspaco'
 import { TelaMes } from './app/TelaMes'
 import type { Mes, Regra } from './dominio/tipos'
 
 type ModalAberto =
   | { tipo: 'espacos' }
-  | { tipo: 'regra'; regra: Regra | null }
-  | { tipo: 'ajuste'; regra: Regra; mes: Mes }
+  | { tipo: 'regra'; regra: Regra | null; mesOrigem?: Mes }
   | { tipo: 'config' }
   | { tipo: 'curva' }
   | null
@@ -41,8 +40,7 @@ function Conteudo() {
       <div className="corpo-app">
         <div className="coluna-principal">
           <TelaMes
-            onEditarRegra={(regra) => setModal({ tipo: 'regra', regra })}
-            onAjustarOcorrencia={(regra, mes) => setModal({ tipo: 'ajuste', regra, mes })}
+            onEditarRegra={(regra, mesOrigem) => setModal({ tipo: 'regra', regra, mesOrigem })}
           />
         </div>
 
@@ -53,9 +51,8 @@ function Conteudo() {
       </div>
 
       {modal?.tipo === 'espacos' && <PainelEspacos onFechar={() => setModal(null)} />}
-      {modal?.tipo === 'regra' && <FormularioRegra regra={modal.regra} onFechar={() => setModal(null)} />}
-      {modal?.tipo === 'ajuste' && (
-        <AjustePontual regra={modal.regra} mes={modal.mes} onFechar={() => setModal(null)} />
+      {modal?.tipo === 'regra' && (
+        <FormularioRegra regra={modal.regra} mesOrigem={modal.mesOrigem} onFechar={() => setModal(null)} />
       )}
       {modal?.tipo === 'config' && <ConfigFinanceiraTela onFechar={() => setModal(null)} />}
       {modal?.tipo === 'curva' && <TelaCurvaDetalhada onFechar={() => setModal(null)} />}
@@ -66,7 +63,9 @@ function Conteudo() {
 function App() {
   return (
     <ProvedorEspaco>
-      <Conteudo />
+      <ProvedorToast>
+        <Conteudo />
+      </ProvedorToast>
     </ProvedorEspaco>
   )
 }

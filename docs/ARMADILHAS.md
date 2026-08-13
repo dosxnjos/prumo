@@ -1,5 +1,32 @@
 # Armadilhas — Prumo
 
+## `min`/`required` num `<input>` dentro de `<form>` engole o `submit` em silêncio
+
+**Sintoma (Fase 2, U8, `FormularioRegra.test.tsx`):** depois de trocar o
+overlay pra usar `<form onSubmit>` (via `Modal`), o teste "parcelas < 1
+bloqueia o save" parou de mostrar o erro — o clique no botão "salvar" não
+fazia NADA (nem erro, nem fechava), como se `salvar()` nunca tivesse sido
+chamado. Confirmado com `console.log` dentro de `salvar()`: realmente nunca
+disparava.
+
+**Causa:** o `<input type="number" min={1} ...>` de parcelas tinha `value=0`
+no momento do clique. A validação nativa de constraint do HTML5 (`min`) marca
+o campo como inválido e o navegador (jsdom incluso) **bloqueia o evento
+`submit` inteiro antes dele disparar** — sem lançar exceção, sem aviso no
+console, só silenciosamente não dispara. Como o form também tem sua própria
+validação em JS (L7, com mensagem em pt-BR), as duas validações competiam e a
+nativa ganhava, escondendo a mensagem custom.
+
+**Correção:** `<form noValidate>` no `Modal` — a validação em JS sempre foi a
+fonte da verdade (mensagem própria, foco no campo certo); a nativa do HTML5
+só atrapalha quando as duas coexistem.
+
+**Regra geral:** ao envolver um formulário existente com validação JS própria
+num `<form>` de verdade (pra ganhar submit-on-Enter), sempre por `noValidate`
+— senão qualquer atributo nativo (`min`, `max`, `required`, `pattern`) que já
+esteja nos inputs por outro motivo (ex. spinner do número) passa a **competir
+silenciosamente** com a validação customizada.
+
 ## `ContextoEspaco.tsx`: closure stale sobre `espacoAtivo`/`espacos` do React state
 
 **Sintoma (achado testando ao vivo com Playwright, Fase 3):** escolher

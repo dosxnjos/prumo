@@ -1,8 +1,10 @@
 import { useRef, useState } from 'react'
 import type { RefObject } from 'react'
 import { useEspaco } from './useEspaco'
+import { useToast } from './useToast'
+import { Modal } from './Modal'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
-import { mesAtual } from '../dominio/mes'
+import { mesAtual, rotulo } from '../dominio/mes'
 import type { Fluxo, Mes, Recorrencia, Regra } from '../dominio/tipos'
 
 type TipoRecorrenciaUI = 'todo-mes' | 'periodo' | 'unica' | 'periodica' | 'parcelada'
@@ -17,11 +19,22 @@ function tipoUIDaRegra(recorrencia: Recorrencia): TipoRecorrenciaUI {
 interface Props {
   regra: Regra | null
   onFechar: () => void
+  /** U2: mês de onde o form foi aberto — habilita a seção "ajustar este mês". */
+  mesOrigem?: Mes
 }
 
-export function FormularioRegra({ regra, onFechar }: Props) {
-  const { espacoAtivo, dados, salvarRegras } = useEspaco()
+export function FormularioRegra({ regra, onFechar, mesOrigem }: Props) {
+  const { espacoAtivo, dados, salvarRegras, restaurarRegra } = useEspaco()
+  const { mostrar: mostrarToast } = useToast()
   const editando = regra !== null
+  const excecaoOrigem = mesOrigem ? regra?.excecoes[mesOrigem] : undefined
+  const [pularMesOrigem, setPularMesOrigem] = useState(excecaoOrigem?.pular === true)
+  const [valorMesOrigemTexto, setValorMesOrigemTexto] = useState(
+    regra
+      ? ((excecaoOrigem?.valorCentavos ?? regra.valorCentavos) / 100).toFixed(2).replace('.', ',')
+      : '',
+  )
+  const [erroAjusteMes, setErroAjusteMes] = useState<string | null>(null)
 
   const [nome, setNome] = useState(regra?.nome ?? '')
   const [fluxo, setFluxo] = useState<Fluxo>(regra?.fluxo ?? 'saida')
@@ -55,7 +68,6 @@ export function FormularioRegra({ regra, onFechar }: Props) {
   const refFim = useRef<HTMLInputElement>(null)
   const refACadaMeses = useRef<HTMLInputElement>(null)
   const refParcelas = useRef<HTMLInputElement>(null)
-  const [confirmandoApagar, setConfirmandoApagar] = useState(false)
 
   function falhar(mensagem: string, campo: typeof campoComErro, ref: RefObject<HTMLInputElement | null>) {
     setErro(mensagem)
@@ -134,12 +146,26 @@ export function FormularioRegra({ regra, onFechar }: Props) {
       : [...dados.regras, regraFinal]
     await salvarRegras(espacoAtivo.id, novasRegras)
     onFechar()
+    mostrarToast('item salvo')
   }
 
+  /**
+   * L3 v2: apagar é imediato — sem confirmação (o toast com "desfazer" por
+   * 5s cobre o arrependimento). O snapshot da regra vai junto no toast
+   * porque o form já fechou quando o desfazer é clicado.
+   */
   async function apagar() {
     if (!regra || !dados || !espacoAtivo) return
-    await salvarRegras(espacoAtivo.id, dados.regras.filter((r) => r.id !== regra.id))
+    const espacoId = espacoAtivo.id
+    const regraApagada = regra
+    await salvarRegras(espacoId, dados.regras.filter((r) => r.id !== regra.id))
     onFechar()
+    mostrarToast(`"${regraApagada.nome}" apagado`, {
+      rotuloAcao: 'desfazer',
+      onAcao: () => {
+        restaurarRegra(espacoId, regraApagada)
+      },
+    })
   }
 
   /** `ativa: false` é o `off` da planilha — desligar preserva histórico, apagar não. */
@@ -150,9 +176,37 @@ export function FormularioRegra({ regra, onFechar }: Props) {
     onFechar()
   }
 
+  /** U2: absorve o que era `AjustePontual` — ajuste vale só pro `mesOrigem`. */
+  async function salvarAjusteMes() {
+    if (!regra || !dados || !espacoAtivo || !mesOrigem) return
+    setErroAjusteMes(null)
+    const novasExcecoes = { ...regra.excecoes }
+    if (pularMesOrigem) {
+      novasExcecoes[mesOrigem] = { pular: true }
+    } else {
+      try {
+        novasExcecoes[mesOrigem] = { valorCentavos: paraCentavos(valorMesOrigemTexto) }
+      } catch {
+        setErroAjusteMes('valor inválido')
+        return
+      }
+    }
+    const atualizado = { ...regra, excecoes: novasExcecoes, atualizadoEm: new Date().toISOString() }
+    await salvarRegras(espacoAtivo.id, dados.regras.map((r) => (r.id === regra.id ? atualizado : r)))
+    onFechar()
+    mostrarToast(`ajuste de ${rotulo(mesOrigem)} salvo`)
+  }
+
+  async function removerAjusteMes() {
+    if (!regra || !dados || !espacoAtivo || !mesOrigem) return
+    const { [mesOrigem]: _removido, ...resto } = regra.excecoes
+    const atualizado = { ...regra, excecoes: resto, atualizadoEm: new Date().toISOString() }
+    await salvarRegras(espacoAtivo.id, dados.regras.map((r) => (r.id === regra.id ? atualizado : r)))
+    onFechar()
+  }
+
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="formulario-regra">
+    <Modal onFechar={onFechar} onSubmit={salvar} className="formulario-regra" titulo={editando ? 'Editar item' : 'Novo item'}>
         <h2>{editando ? 'Editar item' : 'Novo item'}</h2>
 
         <label>
@@ -269,46 +323,62 @@ export function FormularioRegra({ regra, onFechar }: Props) {
           {campoComErro === 'parcelas' && <p className="erro-campo">{erro}</p>}
         </fieldset>
 
-        {editando && confirmandoApagar && (
-          <p className="confirmacao-apagar">
-            apagar "{regra?.nome}"? Isso remove o item de TODOS os meses — desligar mantém o
-            histórico.
-          </p>
+        {editando && mesOrigem && (
+          <fieldset className="ajuste-mes-origem">
+            <legend>só em {rotulo(mesOrigem)}</legend>
+
+            <label>
+              <input
+                type="checkbox"
+                checked={pularMesOrigem}
+                onChange={(e) => setPularMesOrigem(e.target.checked)}
+              />
+              pular este mês
+            </label>
+
+            {!pularMesOrigem && (
+              <label>
+                valor neste mês
+                <input
+                  value={valorMesOrigemTexto}
+                  onChange={(e) => setValorMesOrigemTexto(e.target.value)}
+                  inputMode="decimal"
+                />
+              </label>
+            )}
+
+            {erroAjusteMes && <p className="erro-campo">{erroAjusteMes}</p>}
+
+            <div className="acoes">
+              {excecaoOrigem && (
+                <button type="button" className="apagar" onClick={removerAjusteMes}>
+                  remover ajuste
+                </button>
+              )}
+              <button type="button" className="salvar" onClick={salvarAjusteMes}>
+                salvar ajuste
+              </button>
+            </div>
+          </fieldset>
         )}
 
         <div className="acoes">
-          {editando && confirmandoApagar ? (
-            <>
-              <button type="button" className="apagar" onClick={apagar}>
-                apagar
-              </button>
-              <button type="button" className="alternar-ativa" onClick={alternarAtiva}>
-                desligar
-              </button>
-              <button type="button" onClick={() => setConfirmandoApagar(false)}>
-                cancelar
-              </button>
-            </>
-          ) : (
-            <>
-              {editando && (
-                <button type="button" className="apagar" onClick={() => setConfirmandoApagar(true)}>
-                  apagar
-                </button>
-              )}
-              {editando && (
-                <button type="button" className="alternar-ativa" onClick={alternarAtiva}>
-                  {regra?.ativa ? 'desligar item' : 'religar item'}
-                </button>
-              )}
-              <button type="button" onClick={onFechar}>
-                cancelar
-              </button>
-              <button type="button" className="salvar" onClick={salvar}>
-                salvar
-              </button>
-            </>
+          {editando && (
+            <button type="button" className="apagar" onClick={apagar}>
+              apagar
+            </button>
           )}
+          {editando && (
+            <button type="button" className="alternar-ativa" onClick={alternarAtiva}>
+              {regra?.ativa ? 'desligar item' : 'religar item'}
+            </button>
+          )}
+          <button type="button" onClick={onFechar}>
+            cancelar
+          </button>
+          <button type="submit" className="salvar">
+            salvar
+          </button>
         </div>
 
         {valorTexto && (
@@ -322,7 +392,6 @@ export function FormularioRegra({ regra, onFechar }: Props) {
             })()}
           </p>
         )}
-      </div>
-    </div>
+    </Modal>
   )
 }

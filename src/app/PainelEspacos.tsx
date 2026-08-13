@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useEspaco } from './useEspaco'
 import { criarEspacoComDono } from './criarEspacoComDono'
+import { Modal } from './Modal'
 import { adicionarMembro, alterarPapel, podeRebaixar, podeRemover, removerMembro } from '../dominio/espaco'
 import type { Papel } from '../dominio/tipos'
 
@@ -98,8 +99,7 @@ export function PainelEspacos({ onFechar }: Props) {
   }
 
   return (
-    <div className="overlay" role="dialog" aria-modal="true">
-      <div className="painel-espacos">
+    <Modal onFechar={onFechar} className="painel-espacos" titulo="Espaços">
         <h2>Espaços</h2>
         <ul className="lista-espacos">
           {espacos.map((e) => (
@@ -225,7 +225,6 @@ export function PainelEspacos({ onFechar }: Props) {
         )}
 
         <button type="button" className="fechar" onClick={onFechar}>fechar</button>
-      </div>
-    </div>
+    </Modal>
   )
 }
