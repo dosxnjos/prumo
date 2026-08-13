@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useEspaco } from './useEspaco'
+import { criarEspacoComDono } from './criarEspacoComDono'
 import { adicionarMembro, alterarPapel, podeRebaixar, podeRemover, removerMembro } from '../dominio/espaco'
 import type { Papel } from '../dominio/tipos'
 
@@ -10,19 +11,24 @@ interface Props {
 }
 
 export function PainelEspacos({ onFechar }: Props) {
-  const { espacos, espacoAtivo, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco } = useEspaco()
+  const espaco = useEspaco()
+  const { espacos, espacoAtivo, dados, selecionarEspaco, atualizarEspacoAtivo, apagarEspaco, reatribuirERemoverMembro } = espaco
   const [criandoNovo, setCriandoNovo] = useState(false)
   const [nomeNovo, setNomeNovo] = useState('')
+  const [nomeDonoNovo, setNomeDonoNovo] = useState('')
   const [renomeando, setRenomeando] = useState(false)
   const [nomeRenomeado, setNomeRenomeado] = useState(espacoAtivo?.nome ?? '')
   const [confirmandoApagar, setConfirmandoApagar] = useState(false)
   const [nomeConfirmacao, setNomeConfirmacao] = useState('')
   const [nomeMembroNovo, setNomeMembroNovo] = useState('')
+  const [reatribuindoMembroId, setReatribuindoMembroId] = useState<string | null>(null)
+  const [paraQuem, setParaQuem] = useState<string>('compartilhado')
 
   async function criar() {
-    if (!nomeNovo.trim()) return
-    await criarEspaco(nomeNovo.trim())
+    if (!nomeNovo.trim() || !nomeDonoNovo.trim()) return
+    await criarEspacoComDono(espaco, nomeNovo.trim(), nomeDonoNovo.trim(), CORES[0])
     setNomeNovo('')
+    setNomeDonoNovo('')
     setCriandoNovo(false)
   }
 
@@ -62,13 +68,33 @@ export function PainelEspacos({ onFechar }: Props) {
     }
   }
 
-  async function remover(membroId: string) {
+  function itensDoMembro(membroId: string): number {
+    return (dados?.regras ?? []).filter((r) => r.membroId === membroId).length
+  }
+
+  async function iniciarRemocao(membroId: string) {
     if (!espacoAtivo) return
+    if (itensDoMembro(membroId) === 0) {
+      try {
+        await atualizarEspacoAtivo(removerMembro(espacoAtivo, membroId))
+      } catch {
+        // trava do último dono — a UI já não deveria oferecer isso, mas o
+        // domínio é a fonte da verdade; se chegar aqui, simplesmente ignora.
+      }
+      return
+    }
+    setReatribuindoMembroId(membroId)
+    setParaQuem('compartilhado')
+  }
+
+  async function confirmarReatribuicaoERemover() {
+    if (!espacoAtivo || !reatribuindoMembroId) return
     try {
-      await atualizarEspacoAtivo(removerMembro(espacoAtivo, membroId))
+      await reatribuirERemoverMembro(espacoAtivo.id, reatribuindoMembroId, paraQuem)
     } catch {
       // idem — trava do último dono.
     }
+    setReatribuindoMembroId(null)
   }
 
   return (
@@ -92,6 +118,11 @@ export function PainelEspacos({ onFechar }: Props) {
         {criandoNovo ? (
           <div className="linha-criar">
             <input value={nomeNovo} onChange={(e) => setNomeNovo(e.target.value)} placeholder="nome do espaço" />
+            <input
+              value={nomeDonoNovo}
+              onChange={(e) => setNomeDonoNovo(e.target.value)}
+              placeholder="seu nome neste espaço"
+            />
             <button type="button" onClick={criar}>criar</button>
             <button type="button" onClick={() => setCriandoNovo(false)}>cancelar</button>
           </div>
@@ -129,9 +160,34 @@ export function PainelEspacos({ onFechar }: Props) {
                     <option value="membro">membro</option>
                   </select>
                   {podeRemover(espacoAtivo, m.id) && (
-                    <button type="button" className="remover" onClick={() => remover(m.id)}>
+                    <button type="button" className="remover" onClick={() => iniciarRemocao(m.id)}>
                       remover
                     </button>
+                  )}
+
+                  {reatribuindoMembroId === m.id && (
+                    <div className="linha-criar reatribuir-itens">
+                      <p>
+                        {itensDoMembro(m.id)} {itensDoMembro(m.id) === 1 ? 'item é' : 'itens são'} de {m.nome}. Passar
+                        para:
+                      </p>
+                      <select value={paraQuem} onChange={(e) => setParaQuem(e.target.value)}>
+                        <option value="compartilhado">Compartilhado</option>
+                        {espacoAtivo.membros
+                          .filter((outro) => outro.id !== m.id)
+                          .map((outro) => (
+                            <option key={outro.id} value={outro.id}>
+                              {outro.nome}
+                            </option>
+                          ))}
+                      </select>
+                      <button type="button" className="apagar" onClick={confirmarReatribuicaoERemover}>
+                        passar e remover
+                      </button>
+                      <button type="button" onClick={() => setReatribuindoMembroId(null)}>
+                        cancelar
+                      </button>
+                    </div>
                   )}
                 </li>
               ))}

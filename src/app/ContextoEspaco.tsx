@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { definirEspacoAtivoId, obterEspacoAtivoId, storeLocal } from '../dados/store-local'
 import type { DadosEspaco } from '../dados/store'
+import { removerMembro } from '../dominio/espaco'
 import type { Espaco } from '../dominio/tipos'
 import { Contexto, type EstadoEspaco } from './useEspaco'
 
@@ -115,6 +116,34 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     [salvarDados],
   )
 
+  /**
+   * L6: reatribui os itens do membro removido antes de tirá-lo do espaço —
+   * as duas escritas na mesma sequência, lendo fresco do storage (mesmo
+   * padrão anti-closure de `salvarDados`), pra nunca deixar uma regra
+   * apontando pra um `membroId` que não existe mais.
+   */
+  const reatribuirERemoverMembro = useCallback(
+    async (espacoId: string, membroIdAntigo: string, membroIdNovo: string) => {
+      const dadosFrescos = await storeLocal.carregar(espacoId)
+      const regrasAtualizadas = dadosFrescos.regras.map((r) =>
+        r.membroId === membroIdAntigo
+          ? { ...r, membroId: membroIdNovo, atualizadoEm: new Date().toISOString() }
+          : r,
+      )
+      const novosDados = { ...dadosFrescos, regras: regrasAtualizadas }
+      await storeLocal.salvar(espacoId, novosDados)
+      const ativoId = await obterEspacoAtivoId()
+      if (ativoId === espacoId) setDados(novosDados)
+
+      const espacosFrescos = await storeLocal.listarEspacos()
+      const espacoFresco = espacosFrescos.find((e) => e.id === espacoId)
+      if (!espacoFresco) return
+      await storeLocal.atualizarEspaco(removerMembro(espacoFresco, membroIdAntigo))
+      await recarregar()
+    },
+    [recarregar],
+  )
+
   const exportarEspaco = useCallback((espacoId: string) => storeLocal.exportarJSON(espacoId), [])
 
   const importarEspaco = useCallback(async (texto: string) => {
@@ -135,10 +164,11 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
     apagarEspaco,
     salvarRegras,
     salvarConfig,
+    reatribuirERemoverMembro,
     exportarEspaco,
     importarEspaco,
     recarregar,
-  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, exportarEspaco, importarEspaco, recarregar])
+  }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, reatribuirERemoverMembro, exportarEspaco, importarEspaco, recarregar])
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>
 }

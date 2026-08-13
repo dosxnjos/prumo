@@ -164,37 +164,53 @@ inverter; 3 depende de 1-2 (não pintar tela que vai mudar de estrutura);
 
 ### Fase 1 — a lógica que mente ou perde dado
 
-5. [ ] **L1**: `ProgressoPeDeMeia` com 3 estados: meta não configurada
+5. [x] **L1**: `ProgressoPeDeMeia` com 3 estados: meta não configurada
    (`metaPeDeMeiaCentavos()===0`) → "configura a meta do pé de meia" com botão
    que abre a config; meta > 0 e falta → texto atual; completo → 🎉 atual.
    — **prova:** vitest de componente cobrindo os 3 estados.
-6. [ ] **L7**: validação do `FormularioRegra` antes de salvar: valor > 0 (com
+   ✅ Feito 13/08/2026 (`ProgressoPeDeMeia.test.tsx`, 3 testes). `onAbrirConfig`
+   é prop nova, threaded de `App.tsx`.
+6. [x] **L7**: validação do `FormularioRegra` antes de salvar: valor > 0 (com
    mensagem "valor precisa ser maior que zero"), `fim >= inicio` no período,
    `parcelas >= 1` e `aCadaMeses >= 1` inteiros (campo vazio/0 → erro, não
    silêncio). Erro aparece junto do campo, foco vai para ele.
    — **prova:** vitest: cada entrada inválida bloqueia o save e `salvarRegras`
    não é chamado; entrada válida salva.
-7. [ ] **L2**: expor `ativa` — no form de edição, ação "desligar item"
+   ✅ Feito 13/08/2026 (`FormularioRegra.test.tsx`, 4 testes). Erro renderiza
+   logo abaixo do campo correspondente (não mais um parágrafo genérico no fim
+   do form) e `ref.current?.focus()` move o foco.
+7. [x] **L2**: expor `ativa` — no form de edição, ação "desligar item"
    (religar quando inativo); na `TelaMes`, seção colapsada "Desligados (N)"
    ao fim da lista, itens com religar em 1 toque. Desligado não entra em
    total nenhum (o motor já garante).
    — **prova:** vitest: desligar remove dos totais e aparece na seção;
    religar restaura. Playwright ao vivo no fluxo completo.
-8. [ ] **L3**: apagar item pede confirmação inline no próprio form ("apagar
+   ✅ Feito 13/08/2026 (`TelaMes.test.tsx`, 1 teste cobrindo o fluxo
+   desligar→religar) + confirmado ao vivo com Playwright (porta de teste
+   isolada 5201): grupo "Compartilhado" some, "Desligados (1)" aparece,
+   Saídas zeram, religar restaura tudo — sem erro de console.
+8. [x] **L3**: apagar item pede confirmação inline no próprio form ("apagar
    'Aluguel'? Isso remove o item de TODOS os meses — desligar mantém o
    histórico." com botões apagar/desligar/cancelar). Vira toast+undo na
    Fase 2, passo 15.
    — **prova:** vitest: primeiro clique não apaga; confirmação apaga.
-9. [ ] **L5**: "+ novo espaço" (painel) pede também "seu nome neste espaço"
+   ✅ Feito 13/08/2026 (`FormularioRegra.test.tsx`, 2 testes — inclui a opção
+   "desligar" dentro da própria confirmação).
+9. [x] **L5**: "+ novo espaço" (painel) pede também "seu nome neste espaço"
    e cria o membro **dono** junto. Nova função `criarEspacoComDono` na camada
    de app (store não muda — chama `criarEspaco` + `atualizarEspaco`).
    — **prova:** vitest: espaço criado pelo painel tem 1 membro `papel:'dono'`.
-10. [ ] **L6**: remover membro com itens mostra "N itens são de <nome>. Passar
+   ✅ Feito 13/08/2026 (`src/app/criarEspacoComDono.ts` +
+   `criarEspacoComDono.test.ts`).
+10. [x] **L6**: remover membro com itens mostra "N itens são de <nome>. Passar
     para:" + select (outro membro / Compartilhado). A reatribuição atualiza
     `membroId` das regras e remove o membro na mesma sequência (ler fresco do
     storage — padrão anti-closure do ARMADILHAS).
     — **prova:** vitest: após remover, nenhuma regra aponta para o id removido.
-11. [ ] **L4**: unificar o saldo. Para mês ≥ atual, a `TelaMes` consome a
+    ✅ Feito 13/08/2026: nova função de contexto `reatribuirERemoverMembro`
+    (lê fresco do storage, escreve regras reatribuídas e SÓ DEPOIS remove o
+    membro) + UI em `PainelEspacos.tsx` (`reatribuirERemoverMembro.test.tsx`).
+11. [x] **L4**: unificar o saldo. Para mês ≥ atual, a `TelaMes` consome a
     projeção (`useSerieProjetada` estendido até o mês navegado): mesmos
     números da tabela, ocorrência sintética "Atrasados do mês anterior"
     visível como linha (como a planilha fazia) e rodapé com
@@ -202,10 +218,25 @@ inverter; 3 depende de 1-2 (não pintar tela que vai mudar de estrutura);
     nota "mês passado — sem encadeamento (ainda não há fechamento)".
     — **prova:** vitest comparando `TelaMes` e série para o mesmo mês com
     dívida no cenário: totais idênticos; Playwright confere a linha sintética.
-12. [ ] **L8**: pós-import, mensagem orienta a substituição: "confere o espaço
+    ✅ Feito 13/08/2026 (`TelaMes.projecao.test.tsx`). Nota: a linha sintética
+    usa o nome que o motor já produz, **"Dívida do mês anterior"**, não
+    "Atrasados" — optei por reaproveitar o texto existente em
+    `projetarMes` (uma única fonte da verdade) em vez de duplicar a mensagem
+    com um texto novo; rodapé com reserva/pé de meia/dívida confirmado ao
+    vivo com Playwright. A checagem Playwright da linha sintética em si NÃO
+    foi feita ao vivo (só via vitest) — o cenário de dívida exige mais setup
+    de dados do que o exemplo fictício do onboarding cobre; registrado como
+    pendência abaixo.
+12. [x] **L8**: pós-import, mensagem orienta a substituição: "confere o espaço
     novo; se estiver tudo lá, apaga o antigo em Espaços → apagar". (Copy só —
     o comportamento de nunca sobrescrever está certo e fica.)
     — **prova:** revisão manual do texto no fluxo Playwright.
+    ✅ Feito 13/08/2026 (`ConfigFinanceiraTela.tsx`, mensagem pós-import).
+    Revisão manual do texto feita por leitura de código; a exportação foi
+    disparada ao vivo com Playwright (sem erro), mas o round-trip completo
+    de importar o arquivo baixado NÃO foi executado ao vivo — mecânica de
+    upload de arquivo via MCP ficou fora do orçamento desta fase; registrado
+    como pendência abaixo.
 
 ### Fase 2 — o fluxo diário (navegação e edição)
 
@@ -385,7 +416,7 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 | risco | mitigação |
 | --- | --- |
 | perder acesso aos dados reais (a única coisa proibida) | Fase 0 obrigatória; restrição nº1; passo 31 confere integridade na origem real ao fim |
-| L4 muda o saldo que o Gabriel vê no mês (número diferente do que ele confere hoje) | é correção de consistência (dois números para o mesmo mês hoje); a linha sintética "Atrasados" torna a diferença explicável na tela; testes de igualdade com a tabela |
+| L4 muda o saldo que o Gabriel vê no mês (número diferente do que ele confere hoje) | é correção de consistência (dois números para o mesmo mês hoje); a linha sintética "Dívida do mês anterior" torna a diferença explicável na tela; testes de igualdade com a tabela |
 | HMR mente durante o dev (armadilha conhecida) | reload completo antes de concluir que algo quebrou; passo 2 corrige a causa |
 | campo novo `ultimoBackupEm` esbarrar em backup antigo | campo opcional com `??`; teste de import v1 sem o campo (passo 28) |
 | MSI desatualizado virar "segunda verdade" da UI | passo 32 obrigatório (MSI é o app do dia a dia, confirmado 13/08) |
@@ -397,6 +428,13 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
   em `dados-locais/`.
 - ~~Passo 32: MSI em uso?~~ ✅ sim (13/08) — passo obrigatório.
 - Passo 1 (sobra): confirmar que "Casinha" é o único espaço no app em uso.
+- Passo 11 (L4): checagem Playwright ao vivo da linha sintética "Dívida do
+  mês anterior" com dívida real de fato — feito só via vitest nesta execução
+  (cenário exige mais setup de dados que o exemplo fictício cobre).
+- Passo 12 (L8): round-trip completo de exportar→importar ao vivo via
+  Playwright — o upload do arquivo baixado não foi exercitado (mecânica de
+  download/upload via MCP fora do orçamento desta fase); a lógica de
+  import/export em si já tem cobertura vitest de sobra em `store-local.test.ts`.
 
 ---
 

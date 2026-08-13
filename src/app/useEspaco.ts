@@ -19,6 +19,8 @@ export interface EstadoEspaco {
    */
   salvarRegras: (espacoId: string, regras: Regra[]) => Promise<void>
   salvarConfig: (espacoId: string, config: ConfigFinanceira) => Promise<void>
+  /** L6: reatribui os itens do membro antigo pro novo dono/'compartilhado', então remove o membro. */
+  reatribuirERemoverMembro: (espacoId: string, membroIdAntigo: string, membroIdNovo: string) => Promise<void>
   exportarEspaco: (espacoId: string) => Promise<string>
   /** Sempre cria um espaço NOVO (id regerado) — nunca sobrescreve um existente. */
   importarEspaco: (texto: string) => Promise<Espaco>

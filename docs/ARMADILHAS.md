@@ -83,6 +83,31 @@ act(...)" sem isso, mesmo com `act` importado de `'react'`).
 assíncrono assentar (loading → dados) deve fazer o polling em `act`s
 separados, nunca um único `act` com `await`s aninhados no meio.
 
+## Teste de componente: DOM presente ≠ contexto carregado
+
+**Sintoma (Fase 1, `FormularioRegra.test.tsx`):** um teste que esperava
+"até aparecer um `<input>` no DOM" pra considerar o `ProvedorEspaco`
+carregado clicava em "salvar" e nada acontecia — `onFechar` nunca era
+chamado, sem erro nenhum.
+
+**Causa:** `FormularioRegra` renderiza todos os campos do formulário
+independente de `espacoAtivo` estar carregado ou não (só usa
+`espacoAtivo?.membros` com optional chaining) — o `<input>` aparece no
+PRIMEIRO render, antes do `useEffect` do `ProvedorEspaco` sequer começar a
+ler o storage. `salvar()` tem um `if (!espacoAtivo || !dados) return`
+silencioso bem no meio da função — o clique "funciona" (sem exceção), só
+não salva nem fecha.
+
+**Correção:** em testes desses componentes "sempre renderizam", esperar por
+um número FIXO de voltas do loop de eventos (várias chamadas de
+`act(async () => { await tick })`) depois do mount, nunca por um elemento
+aparecer no DOM como proxy de "carregou".
+
+**Regra geral:** o DOM só é sinal confiável de "carregado" em componentes
+que fazem gate explícito (`if (carregando) return null`, como `App.tsx`
+faz). Em qualquer outro componente, tratar o carregamento do contexto como
+invisível ao DOM e esperar por tempo/estado, não por presença de elemento.
+
 ## `git push` rejeitado com 403 — remote HTTPS depende da conta `gh` ativa
 
 **Sintoma (13/08/2026, ao fechar a Fase 0):** `git push` deu

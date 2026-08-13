@@ -1,4 +1,5 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+import type { RefObject } from 'react'
 import { useEspaco } from './useEspaco'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
 import { mesAtual } from '../dominio/mes'
@@ -48,6 +49,19 @@ export function FormularioRegra({ regra, onFechar }: Props) {
     regra?.recorrencia.tipo === 'parcelada' ? regra.recorrencia.parcelas : 6,
   )
   const [erro, setErro] = useState<string | null>(null)
+  const [campoComErro, setCampoComErro] = useState<'nome' | 'valor' | 'fim' | 'aCadaMeses' | 'parcelas' | null>(null)
+  const refNome = useRef<HTMLInputElement>(null)
+  const refValor = useRef<HTMLInputElement>(null)
+  const refFim = useRef<HTMLInputElement>(null)
+  const refACadaMeses = useRef<HTMLInputElement>(null)
+  const refParcelas = useRef<HTMLInputElement>(null)
+  const [confirmandoApagar, setConfirmandoApagar] = useState(false)
+
+  function falhar(mensagem: string, campo: typeof campoComErro, ref: RefObject<HTMLInputElement | null>) {
+    setErro(mensagem)
+    setCampoComErro(campo)
+    ref.current?.focus()
+  }
 
   function construirRecorrencia(): Recorrencia {
     switch (tipoUI) {
@@ -66,15 +80,32 @@ export function FormularioRegra({ regra, onFechar }: Props) {
 
   async function salvar() {
     setErro(null)
+    setCampoComErro(null)
     if (!nome.trim()) {
-      setErro('dá um nome pro item')
+      falhar('dá um nome pro item', 'nome', refNome)
       return
     }
     let valorCentavos: number
     try {
       valorCentavos = paraCentavos(valorTexto)
     } catch {
-      setErro('valor inválido')
+      falhar('valor inválido', 'valor', refValor)
+      return
+    }
+    if (valorCentavos <= 0) {
+      falhar('valor precisa ser maior que zero', 'valor', refValor)
+      return
+    }
+    if (tipoUI === 'periodo' && fim < inicio) {
+      falhar('o fim não pode vir antes do início', 'fim', refFim)
+      return
+    }
+    if (tipoUI === 'periodica' && (!Number.isInteger(aCadaMeses) || aCadaMeses < 1)) {
+      falhar('precisa ser 1 ou mais', 'aCadaMeses', refACadaMeses)
+      return
+    }
+    if (tipoUI === 'parcelada' && (!Number.isInteger(parcelas) || parcelas < 1)) {
+      falhar('precisa ser 1 ou mais', 'parcelas', refParcelas)
       return
     }
     if (!espacoAtivo || !dados) return
@@ -111,6 +142,14 @@ export function FormularioRegra({ regra, onFechar }: Props) {
     onFechar()
   }
 
+  /** `ativa: false` é o `off` da planilha — desligar preserva histórico, apagar não. */
+  async function alternarAtiva() {
+    if (!regra || !dados || !espacoAtivo) return
+    const atualizado = { ...regra, ativa: !regra.ativa, atualizadoEm: new Date().toISOString() }
+    await salvarRegras(espacoAtivo.id, dados.regras.map((r) => (r.id === regra.id ? atualizado : r)))
+    onFechar()
+  }
+
   return (
     <div className="overlay" role="dialog" aria-modal="true">
       <div className="formulario-regra">
@@ -118,8 +157,9 @@ export function FormularioRegra({ regra, onFechar }: Props) {
 
         <label>
           Nome
-          <input value={nome} onChange={(e) => setNome(e.target.value)} placeholder="ex. Aluguel" />
+          <input ref={refNome} value={nome} onChange={(e) => setNome(e.target.value)} placeholder="ex. Aluguel" />
         </label>
+        {campoComErro === 'nome' && <p className="erro-campo">{erro}</p>}
 
         <label>
           Tipo
@@ -149,12 +189,14 @@ export function FormularioRegra({ regra, onFechar }: Props) {
         <label>
           Valor
           <input
+            ref={refValor}
             value={valorTexto}
             onChange={(e) => setValorTexto(e.target.value)}
             placeholder="0,00"
             inputMode="decimal"
           />
         </label>
+        {campoComErro === 'valor' && <p className="erro-campo">{erro}</p>}
 
         <fieldset>
           <legend>Quando acontece</legend>
@@ -174,10 +216,11 @@ export function FormularioRegra({ regra, onFechar }: Props) {
               <>
                 <input type="month" value={inicio} onChange={(e) => setInicio(e.target.value)} />
                 até
-                <input type="month" value={fim} onChange={(e) => setFim(e.target.value)} />
+                <input ref={refFim} type="month" value={fim} onChange={(e) => setFim(e.target.value)} />
               </>
             )}
           </label>
+          {campoComErro === 'fim' && <p className="erro-campo">{erro}</p>}
 
           <label className="opcao-recorrencia">
             <input type="radio" checked={tipoUI === 'unica'} onChange={() => setTipoUI('unica')} />
@@ -193,6 +236,7 @@ export function FormularioRegra({ regra, onFechar }: Props) {
             {tipoUI === 'periodica' && (
               <>
                 <input
+                  ref={refACadaMeses}
                   type="number"
                   min={1}
                   value={aCadaMeses}
@@ -204,10 +248,12 @@ export function FormularioRegra({ regra, onFechar }: Props) {
               </>
             )}
           </label>
+          {campoComErro === 'aCadaMeses' && <p className="erro-campo">{erro}</p>}
 
           <label className="opcao-recorrencia">
             <input type="radio" checked={tipoUI === 'parcelada'} onChange={() => setTipoUI('parcelada')} />
             <input
+              ref={refParcelas}
               type="number"
               min={1}
               value={parcelas}
@@ -220,22 +266,49 @@ export function FormularioRegra({ regra, onFechar }: Props) {
               <input type="month" value={inicio} onChange={(e) => setInicio(e.target.value)} />
             )}
           </label>
+          {campoComErro === 'parcelas' && <p className="erro-campo">{erro}</p>}
         </fieldset>
 
-        {erro && <p className="erro">{erro}</p>}
+        {editando && confirmandoApagar && (
+          <p className="confirmacao-apagar">
+            apagar "{regra?.nome}"? Isso remove o item de TODOS os meses — desligar mantém o
+            histórico.
+          </p>
+        )}
 
         <div className="acoes">
-          {editando && (
-            <button type="button" className="apagar" onClick={apagar}>
-              apagar
-            </button>
+          {editando && confirmandoApagar ? (
+            <>
+              <button type="button" className="apagar" onClick={apagar}>
+                apagar
+              </button>
+              <button type="button" className="alternar-ativa" onClick={alternarAtiva}>
+                desligar
+              </button>
+              <button type="button" onClick={() => setConfirmandoApagar(false)}>
+                cancelar
+              </button>
+            </>
+          ) : (
+            <>
+              {editando && (
+                <button type="button" className="apagar" onClick={() => setConfirmandoApagar(true)}>
+                  apagar
+                </button>
+              )}
+              {editando && (
+                <button type="button" className="alternar-ativa" onClick={alternarAtiva}>
+                  {regra?.ativa ? 'desligar item' : 'religar item'}
+                </button>
+              )}
+              <button type="button" onClick={onFechar}>
+                cancelar
+              </button>
+              <button type="button" className="salvar" onClick={salvar}>
+                salvar
+              </button>
+            </>
           )}
-          <button type="button" onClick={onFechar}>
-            cancelar
-          </button>
-          <button type="button" className="salvar" onClick={salvar}>
-            salvar
-          </button>
         </div>
 
         {valorTexto && (

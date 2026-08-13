@@ -44,7 +44,10 @@ export function ConfigFinanceiraTela({ onFechar }: Props) {
     try {
       const texto = await arquivo.text()
       const novo = await importarEspaco(texto)
-      setMensagemBackup(`Importado como novo espaço: "${novo.nome}". Nada foi sobrescrito.`)
+      setMensagemBackup(
+        `Importado como novo espaço: "${novo.nome}". Nada foi sobrescrito — confere o espaço novo; ` +
+          'se estiver tudo lá, apaga o antigo em Espaços → apagar.',
+      )
     } catch {
       setMensagemBackup('Não consegui importar esse arquivo — confere se é um backup do Prumo.')
     }

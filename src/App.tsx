@@ -47,7 +47,7 @@ function Conteudo() {
         </div>
 
         <div className="coluna-lateral">
-          <ProgressoPeDeMeia />
+          <ProgressoPeDeMeia onAbrirConfig={() => setModal({ tipo: 'config' })} />
           <CurvaSaldo onVerDetalhes={() => setModal({ tipo: 'curva' })} />
         </div>
       </div>

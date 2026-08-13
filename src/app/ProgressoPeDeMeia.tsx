@@ -5,7 +5,12 @@ import { formatarBRL } from '../dominio/dinheiro'
 import { mesAtual } from '../dominio/mes'
 import { projetarMes } from '../dominio/projecao'
 
-export function ProgressoPeDeMeia() {
+interface Props {
+  /** Abre a tela de config financeira — usado no estado "meta não configurada". */
+  onAbrirConfig: () => void
+}
+
+export function ProgressoPeDeMeia({ onAbrirConfig }: Props) {
   const { dados } = useEspaco()
 
   const progresso = useMemo(() => {
@@ -13,8 +18,10 @@ export function ProgressoPeDeMeia() {
     const { config } = dados
     const meta = metaPeDeMeiaCentavos(config)
     const atual = config.peDeMeiaAtualCentavos
-    const faltam = Math.max(0, meta - atual)
 
+    if (meta === 0) return { meta, atual, faltam: 0, mesesEstimados: 0 }
+
+    const faltam = Math.max(0, meta - atual)
     if (faltam === 0) return { meta, atual, faltam, mesesEstimados: 0 }
 
     // aporte deste mês, no ritmo atual — estimativa, não promessa (mesma
@@ -32,6 +39,19 @@ export function ProgressoPeDeMeia() {
   }, [dados])
 
   if (!progresso) return null
+
+  // meta zerada não é meta atingida (L1) — sem meta configurada, "faltam
+  // R$ 0,00 de R$ 0,00" mentia que estava completo.
+  if (progresso.meta === 0) {
+    return (
+      <section className="progresso-pe-de-meia">
+        <p>Configura a meta do pé de meia pra acompanhar o progresso aqui.</p>
+        <button type="button" onClick={onAbrirConfig}>
+          configurar meta
+        </button>
+      </section>
+    )
+  }
 
   if (progresso.faltam === 0) {
     return (
