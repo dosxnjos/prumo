@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
 import { mesAtual } from '../dominio/mes'
 import type { Fluxo, Mes, Recorrencia, Regra } from '../dominio/tipos'

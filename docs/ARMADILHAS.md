@@ -49,10 +49,39 @@ qualquer interação que pareça "não disparar" durante uma sessão longa de de
 de concluir que algo é bug real. Resolvido isso, o comportamento ficou
 correto.
 
-**Correção estrutural, não feita ainda (baixo risco, cosmética):** separar
-`useEspaco` para um arquivo próprio (ex. `useEspaco.ts`), deixando
-`ContextoEspaco.tsx` só com o componente `ProvedorEspaco`. Pendência aberta,
-não bloqueia a Fase 3.
+**Correção estrutural — feita 13/08/2026 (Fase 0, passo 2)** do roadmap
+`2026-08-13-melhoria-ux-ui-logica.md`: `useEspaco` (hook + `Contexto` +
+`EstadoEspaco`) mudou para `src/app/useEspaco.ts`; `ContextoEspaco.tsx` ficou
+só com `ProvedorEspaco`. Validado com `npm run dev` + edição ao vivo (via
+Playwright, console sem `Could not Fast Refresh`) e `npm test`/`npm run
+build` verdes.
+
+## Teste de componente com `act()` assíncrono trava esperando estado que nunca chega
+
+**Sintoma (Fase 0, passo 4, `ContextoEspaco.test.tsx`):** `estadoObservado`
+ficava travado no valor do primeiro render (`carregando: true`) mesmo depois
+de 100 voltas de `setTimeout` reais dentro de
+`await act(async () => { root.render(...); await esperarAlgumaCoisa() })` —
+o `useEffect` que dispara `recarregar()` parecia nunca progredir.
+
+**Causa:** `act(async () => { ... })` só comita os efeitos passivos
+pendentes quando a callback **inteira** termina — um `await` no meio dela
+não abre uma janela de commit. Como a espera (polling) estava *dentro* da
+mesma chamada de `act` do `render()`, o React nunca tinha a chance de
+processar o `useEffect` (que encadeia leituras assíncronas no
+`fake-indexeddb`) enquanto a Promise externa não resolvia — um deadlock.
+
+**Correção:** `render()` em um `act(() => {...})` síncrono próprio; o
+polling que segue é uma sequência de `act(async () => { await tick })`
+**independentes** (uma chamada de `act` por tentativa), não um `act` só
+encadeando várias esperas — assim o React comita entre uma tentativa e
+outra. Também é preciso `(globalThis as ...).IS_REACT_ACT_ENVIRONMENT = true`
+no topo do arquivo de teste (React 19 avisa "not configured to support
+act(...)" sem isso, mesmo com `act` importado de `'react'`).
+
+**Regra geral:** qualquer teste de componente que espera um efeito
+assíncrono assentar (loading → dados) deve fazer o polling em `act`s
+separados, nunca um único `act` com `await`s aninhados no meio.
 
 ## MCP `github` autentica como a conta corporativa, não `dosxnjos`
 

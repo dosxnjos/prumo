@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import type { Regra } from '../dominio/tipos'
 import { mesAtual, somarMeses } from '../dominio/mes'
 

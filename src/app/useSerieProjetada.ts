@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import { paraConfigProjecao } from '../dominio/config'
 import { mesAtual, somarMeses } from '../dominio/mes'
 import { criarProjetorSerie } from '../dominio/projecao'

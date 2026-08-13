@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import { metaPeDeMeiaCentavos, paraConfigProjecao } from '../dominio/config'
 import { formatarBRL } from '../dominio/dinheiro'
 import { mesAtual } from '../dominio/mes'

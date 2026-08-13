@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import { formatarBRL, paraCentavos } from '../dominio/dinheiro'
 import { metaPeDeMeiaCentavos, taxaRendimentoMensalDeCDI } from '../dominio/config'
 import type { ConfigFinanceira } from '../dominio/config'

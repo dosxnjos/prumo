@@ -129,22 +129,38 @@ inverter; 3 depende de 1-2 (não pintar tela que vai mudar de estrutura);
    é por espaço).
    — **prova:** resposta do Gabriel registrada aqui; se houver outro espaço,
    repetir o export antes de seguir.
-2. [ ] Separar `useEspaco` para `src/app/useEspaco.ts` (o `ContextoEspaco.tsx`
+   ⚠️ Execução autônoma (13/08/2026): pergunta pulável, sem resposta possível
+   em `/goal` — registrada em "Pendências de decisão" ao final do arquivo.
+2. [x] Separar `useEspaco` para `src/app/useEspaco.ts` (o `ContextoEspaco.tsx`
    fica só com `ProvedorEspaco`), atualizando os 10 imports. Corrige o Fast
    Refresh (M1) antes das sessões longas de dev que este roadmap exige.
    — **prova:** `npm run dev` + editar um componente → console sem
    `Could not Fast Refresh`; `npm test` e `npm run build` verdes.
-3. [ ] `src/app/ErroApp.tsx`: ErrorBoundary no topo (`main.tsx`) com mensagem
+   ✅ Feito 13/08/2026: validado ao vivo com Playwright numa porta de teste
+   isolada (5201, não a 5177 real) — `[vite] hot updated` limpo, sem aviso de
+   Fast Refresh; `npm test` (78/78) e `npm run build` verdes.
+3. [x] `src/app/ErroApp.tsx`: ErrorBoundary no topo (`main.tsx`) com mensagem
    em pt-BR, botão "recarregar" e botão "baixar meus dados" que despeja o
    IndexedDB bruto (ler `prumo-db` direto com idb-keyval) num JSON — o dado
    sobrevive mesmo com a UI quebrada (M2, metade 1).
    — **prova:** teste de componente com filho que lança → boundary renderiza;
    clique em "baixar meus dados" gera blob não-vazio (mock do idb).
-4. [ ] Tratar os `throw` de storage no `ProvedorEspaco` (M2, metade 2):
+   ✅ Feito 13/08/2026 (`src/app/ErroApp.test.tsx`, 3 testes). Resolução
+   conservadora registrada: a prova exige renderizar componente, o que exige
+   `jsdom` — instalado como devDependency mínima nesta fase (não
+   `@testing-library/react`, que a Fase 5/passo 29 já previa; usei
+   `react-dom/client` + `act` puro, sem lib extra). Reversível, não muda
+   semântica de produção — não é decisão do Gabriel, mas registrada aqui por
+   transparência.
+4. [x] Tratar os `throw` de storage no `ProvedorEspaco` (M2, metade 2):
    espaço do índice sem registro → remove do índice exibido + console.error,
    nunca tela branca; `espacoAtivoId` órfão → cai para o primeiro espaço.
    — **prova:** teste com `fake-indexeddb`: índice apontando para espaço
    inexistente → `carregando:false`, app renderiza seletor, sem exceção.
+   ✅ Feito 13/08/2026 (`src/app/ContextoEspaco.test.tsx`, 2 testes, ambos os
+   cenários da prova). Armadilha de teste descoberta e documentada em
+   `docs/ARMADILHAS.md` (`act()` assíncrono não flusha efeito no meio do
+   `await`).
 
 ### Fase 1 — a lógica que mente ou perde dado
 
@@ -381,6 +397,20 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
   em `dados-locais/`.
 - ~~Passo 32: MSI em uso?~~ ✅ sim (13/08) — passo obrigatório.
 - Passo 1 (sobra): confirmar que "Casinha" é o único espaço no app em uso.
+
+---
+
+## Pendências de decisão (execução 2026-08-13 — Fase 0, modo autônomo)
+
+- **Passo 1 (sobra): "Casinha" é o único espaço em uso?** Pergunta do
+  Gabriel, sem resposta possível em execução autônoma (`/goal`). **Pulável**
+  — não bloqueou o resto da Fase 0 (backup já feito, código não depende
+  disso). O que foi feito no lugar: nada, a pergunta segue aberta.
+  Trade-off: se houver um SEGUNDO espaço em uso além de "Casinha", ele não
+  tem backup — o export é por espaço, e só "Casinha" foi exportado em
+  13/08/2026. **Recomendação:** confirmar antes do passo 31 (Fase 5), que já
+  é o ponto formal de conferir integridade contra a origem real; se houver
+  outro espaço, exportá-lo então.
 
 ---
 

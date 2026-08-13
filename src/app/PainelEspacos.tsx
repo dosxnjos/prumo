@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { useEspaco } from './ContextoEspaco'
+import { useEspaco } from './useEspaco'
 import { adicionarMembro, alterarPapel, podeRebaixar, podeRemover, removerMembro } from '../dominio/espaco'
 import type { Papel } from '../dominio/tipos'
 

@@ -1,33 +1,9 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import { definirEspacoAtivoId, obterEspacoAtivoId, storeLocal } from '../dados/store-local'
 import type { DadosEspaco } from '../dados/store'
-import type { ConfigFinanceira } from '../dominio/config'
-import type { Espaco, Regra } from '../dominio/tipos'
-
-interface EstadoEspaco {
-  carregando: boolean
-  espacos: Espaco[]
-  espacoAtivo: Espaco | null
-  dados: DadosEspaco | null
-  selecionarEspaco: (espacoId: string) => Promise<void>
-  criarEspaco: (nome: string) => Promise<Espaco>
-  atualizarEspacoAtivo: (espaco: Espaco) => Promise<void>
-  apagarEspaco: (espacoId: string) => Promise<void>
-  /**
-   * `espacoId` explícito — NUNCA feche sobre `espacoAtivo` do contexto: um
-   * chamador que acabou de criar o espaço no mesmo fluxo (ex. onboarding)
-   * teria uma referência stale e a gravação silenciosamente não aconteceria.
-   */
-  salvarRegras: (espacoId: string, regras: Regra[]) => Promise<void>
-  salvarConfig: (espacoId: string, config: ConfigFinanceira) => Promise<void>
-  exportarEspaco: (espacoId: string) => Promise<string>
-  /** Sempre cria um espaço NOVO (id regerado) — nunca sobrescreve um existente. */
-  importarEspaco: (texto: string) => Promise<Espaco>
-  recarregar: () => Promise<void>
-}
-
-const Contexto = createContext<EstadoEspaco | null>(null)
+import type { Espaco } from '../dominio/tipos'
+import { Contexto, type EstadoEspaco } from './useEspaco'
 
 export function ProvedorEspaco({ children }: { children: ReactNode }) {
   const [carregando, setCarregando] = useState(true)
@@ -35,16 +11,38 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
   const [espacoAtivo, setEspacoAtivo] = useState<Espaco | null>(null)
   const [dados, setDados] = useState<DadosEspaco | null>(null)
 
+  /**
+   * `espacoAtivoId` órfão (aponta para um id fora do índice) já cai pro
+   * primeiro espaço por causa da ordenação abaixo. Espaço presente no
+   * índice mas sem registro de dados (`storeLocal.carregar` lança) é
+   * removido do índice exibido e a busca continua pro próximo candidato —
+   * nunca deixa a tela branca (M2).
+   */
   const carregarEspacoAtivo = useCallback(async (lista: Espaco[]) => {
     const ativoId = await obterEspacoAtivoId()
-    const ativo = lista.find((e) => e.id === ativoId) ?? lista[0] ?? null
-    setEspacoAtivo(ativo)
-    if (ativo) {
-      setDados(await storeLocal.carregar(ativo.id))
-      await definirEspacoAtivoId(ativo.id)
-    } else {
-      setDados(null)
+    const ordenados = ativoId
+      ? [lista.find((e) => e.id === ativoId), ...lista.filter((e) => e.id !== ativoId)].filter(
+          (e): e is Espaco => e != null,
+        )
+      : lista
+
+    for (const candidato of ordenados) {
+      try {
+        const dadosCarregados = await storeLocal.carregar(candidato.id)
+        setEspacoAtivo(candidato)
+        setDados(dadosCarregados)
+        await definirEspacoAtivoId(candidato.id)
+        return
+      } catch (erro) {
+        console.error(
+          `espaço "${candidato.nome}" (${candidato.id}) está no índice mas sem registro de dados — removendo do índice exibido`,
+          erro,
+        )
+        setEspacos((atual) => atual.filter((e) => e.id !== candidato.id))
+      }
     }
+    setEspacoAtivo(null)
+    setDados(null)
   }, [])
 
   const recarregar = useCallback(async () => {
@@ -108,12 +106,12 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
   }, [])
 
   const salvarRegras = useCallback(
-    (espacoId: string, regras: Regra[]) => salvarDados(espacoId, { regras }),
+    (espacoId: string, regras: DadosEspaco['regras']) => salvarDados(espacoId, { regras }),
     [salvarDados],
   )
 
   const salvarConfig = useCallback(
-    (espacoId: string, config: ConfigFinanceira) => salvarDados(espacoId, { config }),
+    (espacoId: string, config: DadosEspaco['config']) => salvarDados(espacoId, { config }),
     [salvarDados],
   )
 
@@ -143,12 +141,4 @@ export function ProvedorEspaco({ children }: { children: ReactNode }) {
   }), [carregando, espacos, espacoAtivo, dados, selecionarEspaco, criarEspaco, atualizarEspacoAtivo, apagarEspaco, salvarRegras, salvarConfig, exportarEspaco, importarEspaco, recarregar])
 
   return <Contexto.Provider value={valor}>{children}</Contexto.Provider>
-}
-
-export function useEspaco(): EstadoEspaco {
-  const contexto = useContext(Contexto)
-  if (!contexto) {
-    throw new Error('useEspaco precisa estar dentro de <ProvedorEspaco>')
-  }
-  return contexto
 }
