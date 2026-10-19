@@ -886,3 +886,5 @@ passar um mês sem abrir a planilha.
 > papéis para o schema da Fase 1**, em vez de deixá-los como enfeite da fase de
 > hospedagem; (3) para marcar o **Marco A** (paridade com a planilha, 100% local)
 > e desenhar a **troca de e-mail sem SMTP** (passo 43).
+
+> Auditado em 2026-09-01 (overhaul): VIVO (adormecido) — Marco A fechado por código 05/08; Fases 4–10 abertas; critério comportamental (um mês sem Sheets) é do Gabriel

@@ -606,3 +606,5 @@ com escala tipográfica definida e `tabular-nums` em todo valor; peso máximo
 > Escrito em 2026-08-13 após diagnóstico ao vivo (Playwright, viewport 390px
 > e 1280px, prints em `temp/`) e leitura integral de `src/`. Executor: uma
 > fase por sessão, na ordem; o md é o contrato.
+
+> Auditado em 2026-09-01 (overhaul): FECHADO — 6 fases, commits 369b4e4…1dfba8b (13/08), instalação confirmada pelo Gabriel; 'Casinha único espaço?' segue com ele
